@@ -1,0 +1,21 @@
+# OS and Editor metadata
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+
+# Temporary debug dumps
+*.log
+debug.txt
+zshrc_temp
+target.data
+
+# Credentials & Key safety
+*.env
+*.pem
+*.key
+id_rsa*
+
+# Private Projects
+2_Deployments_and_Projects/04_SME_IT_Infrastructure_Simulation.md
+

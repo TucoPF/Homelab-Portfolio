@@ -1,0 +1,1 @@
+/root/.gemini/config/AGENTS.md
