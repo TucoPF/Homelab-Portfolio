@@ -1,11 +1,11 @@
-# 🏆 Windows Administration Project - Skynet Homelab (COMPLETED & DECOMMISSIONED)
+# 🏆 Windows Administration Project - skynet Homelab (COMPLETED & DECOMMISSIONED)
 
 > [!NOTE]
 > **Status: Course Project Completed & Decommissioned**
 > The complete 23-step Windows Active Directory lab curriculum has been successfully completed, and the active VMs (Windows Server 2025 - VM 220 and Tiny11 Client - VM 221) have been deleted/decommissioned from Proxmox to reclaim server resources. Only standard stopped Linux templates remain. This file serves as a complete operational archive.
 
-## Environment Details (Skynet Node)
-- **Host:** Skynet (192.168.1.200)
+## Environment Details (skynet Node)
+- **Host:** skynet (192.168.1.200)
 - **Network Architecture:**
   - `vmbr0` (Home Network): `192.168.1.0/24` (Internet access, RDP Jumpbox)
   - `vmbr2` (Private Lab Network): `10.10.10.0/24` (Isolated for VMs)

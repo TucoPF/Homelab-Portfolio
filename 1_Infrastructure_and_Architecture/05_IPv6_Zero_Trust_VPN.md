@@ -11,14 +11,14 @@ The solution relies on **IPv6 Prefix Delegation**, **WireGuard**, and **automate
     *   IPv6 Firewall is **disabled** for Secondary Prefixes (e.g., `::1/64`).
     *   **Next Hop Delegation:** The Secondary Prefix is delegated to the Link-Local Address (LLA) of the WireGuard LXC container.
 
-2.  **Edge Gateway (CT 111 - WireGuard LXC on Matrix):**
+2.  **Edge Gateway (CT 111 - WireGuard LXC on matrix):**
     *   Runs on an unprivileged Proxmox LXC container.
     *   **Public Interface (eth0):** Holds a static IPv6 Global Unicast Address (GUA) from the Secondary Prefix (e.g., `...:29e1::111`) to bypass the ISP firewall.
     *   **Internal Gateway (eth0):** Holds a static Unique Local Address (ULA) (`fddf::111/64`) acting as the gateway for internal routing.
     *   **VPN Tunnel (wg0):** WireGuard interface providing point-to-point connections (`fdfd::a/128`).
     *   **Security:** Proxmox firewall drops all traffic to the container except **UDP Port 11111** (WireGuard Handshake). TCP 22 (SSH) is strictly limited to traffic originating from within the VPN tunnel (`fdfd::/64`).
 
-3.  **Internal Servers (Matrix & Skynet):**
+3.  **Internal Servers (matrix & skynet):**
     *   Assigned static ULAs (`fddf::1/64` and `fddf::2/64`).
     *   Configured with static routes pointing VPN traffic (`fdfd::/64`) back to the CT 111 Gateway (`fddf::111`).
     *   Protected by Proxmox Node firewalls, allowing access only from the trusted `admin` IPSET (which includes the specific VPN client IPs).
@@ -81,7 +81,7 @@ Enforces Single Sign-On (SSO) at the proxy level:
 ### 5. Intrusion Prevention & Hypervisor Firewall Integration (Decoupled CrowdSec LAPI & PVE Bouncer)
 Integrates deep Layer 7 threat defense and hypervisor-level packet filtering:
 *   **Decoupled Control Plane**: CrowdSec LAPI, database, and engine are isolated inside a dedicated unprivileged security container (`LXC 114`).
-*   **Host-Level Drop Bouncer**: A systemd timer (`sync-crowdsec.timer`) and service (`sync-crowdsec.service`) run every 5 minutes directly on the **Matrix Host**. It executes a synchronization bash script (`/usr/local/bin/sync-crowdsec.sh`) that pulls active bans from the CrowdSec LAPI inside `LXC 114` via Proxmox's `pct exec` tool. The script populates two host-level kernel IPsets (`crowdsec-bans-v4` and `crowdsec-bans-v6`) and enforces packet drop rules in the **`raw` table `PREROUTING` chain** of the host's `iptables` / `ip6tables`. This discards all traffic from blacklisted IPs at the absolute network boundary (including physical interface `nic0`), saving hypervisor resources and protecting all local nodes and gateways globally.
+*   **Host-Level Drop Bouncer**: A systemd timer (`sync-crowdsec.timer`) and service (`sync-crowdsec.service`) run every 5 minutes directly on the **matrix Host**. It executes a synchronization bash script (`/usr/local/bin/sync-crowdsec.sh`) that pulls active bans from the CrowdSec LAPI inside `LXC 114` via Proxmox's `pct exec` tool. The script populates two host-level kernel IPsets (`crowdsec-bans-v4` and `crowdsec-bans-v6`) and enforces packet drop rules in the **`raw` table `PREROUTING` chain** of the host's `iptables` / `ip6tables`. This discards all traffic from blacklisted IPs at the absolute network boundary (including physical interface `nic0`), saving hypervisor resources and protecting all local nodes and gateways globally.
 *   **Lightweight Forwarder Agent**: The Traefik edge proxy (`LXC 112`) runs strictly as a decoupled log-parsing agent that forwards security alerts to the remote LAPI over the private IPv6 ULA network (`fddf::/64`).
 *   **Administrative Whitelist**: Explicitly excludes internal management scopes (`192.168.1.0/24`, `fddf::/64`, `fdfd::/64`) from alerting to eliminate administrative lockout risks.
 

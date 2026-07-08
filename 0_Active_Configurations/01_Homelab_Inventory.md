@@ -2,25 +2,25 @@
 
 > **Note:** Gemini CLI is currently running on **Windows Laptop (T800)**.
 
-## Matrix (Proxmox Standalone)
+## matrix (Proxmox Standalone)
 - **IP Address:** 192.168.1.100 (ULA: fddf::1)
-- **Hostname:** Matrix
+- **Hostname:** matrix
 - **Network:**
   - Main bridge `vmbr0` on **`nic0`** (2.5GbE RJ45, isolated from Intel vPro on `nic1`)
-  - Direct 10G SFP+ storage link on **`nic2`** (IP: `fddd::1/64` to Skynet)
+  - Direct 10G SFP+ storage link on **`nic2`** (IP: `fddd::1/64` to skynet)
 - **Hardware:**
   - **Model:** 13th Gen Intel(R) Core(TM) i9-13900H (14 cores / 20 threads)
   - **RAM:** 32 GiB
   - **Storage:** 
     - 1 TB NVMe (Primary OS, PVE Root: 96G, `/dev/nvme1n1` [Samsung 990 PRO])
     - 2 TB NVMe (High-Speed Cache Tier, mounted at `/mnt/matrix-cache`, `/dev/nvme0n1` [Samsung 990 PRO])
-    - 2x 10TB iSCSI LUNs from Skynet (`sda`, `sdb` mapped from Skynet's `sda` and `sdd`)
+    - 2x 10TB iSCSI LUNs from skynet (`sda`, `sdb` mapped from skynet's `sda` and `sdd`)
     - Local EXT4 Pool: ~18T (`/dev/sda`, `/dev/sdb` formatted as EXT4) pooled via MergerFS at `/mnt/matrix-pool`
     - MergerFS Tiered Pool: ~20T (NVMe Cache + EXT4 Pool) at `/mnt/fusion`
-    - ZFS over iSCSI: Dynamic ZVOL block allocations served from Skynet's ZFS mirror pool over the 10G link
-- **Storage Role:** Primary Filesystem Manager. Acts as the sole iSCSI Initiator for Skynet.
+    - ZFS over iSCSI: Dynamic ZVOL block allocations served from skynet's ZFS mirror pool over the 10G link
+- **Storage Role:** Primary Filesystem Manager. Acts as the sole iSCSI Initiator for skynet.
 - **PBS Connection:**
-  - **To Skynet:** Connected to `Backups` datastore on Skynet over 10G link (`[fddd::2]:8007`)
+  - **To skynet:** Connected to `Backups` datastore on skynet over 10G link (`[fddd::2]:8007`)
 - **LXC Containers / VMs:**
   - **101 (Jellyfin-101):** Native, 16 GiB RAM, 64G Disk, GPU Passthrough (iGPU Intel), Unprivileged, mapped UID/GID 1000, Mountpoint: `/mnt/fusion` -> `/mnt/fusion`, IP: 192.168.1.101
   - **102 (NZBGet-102):** Native, 16 GiB RAM, 8G Disk, Unprivileged, Mountpoint: `/mnt/matrix-cache` to `/mnt/fusion` (Fusion Trick SSD mount), IP: 192.168.1.102
@@ -39,7 +39,7 @@
   - **OS:** Debian GNU/Linux 13 (trixie)
   - **Proxmox VE:** 9.2.3 (running kernel: 7.0.12-1-pve)
 
-## Skynet (Proxmox Virtual Environment Node - Upgraded Custom Tower)
+## skynet (Proxmox Virtual Environment Node - Upgraded Custom Tower)
 - **IP Address:** 192.168.1.200 (ULA: `fddf::2`)
 - **Hostname:** skynet
 - **Hardware:**
@@ -53,15 +53,15 @@
     - 1 TB NVMe (PVE OS & Datastore, LVM-Thin `local`/`local-lvm` on `nvme0n1` [Samsung 980 Pro])
     - 1 TB NVMe (Native Proxmox Backup Server Datastore `Backups`, XFS on `nvme1n1` [Kingston OM3PGP4] mounted at `/mnt/datastore/Backups`)
     - 2x 10TB Seagate Exos SAS HDDs (`sda`, `sdd`) exported as raw block devices via iSCSI LIO target.
-    - ZFS Mirror Pool: 2x 10TB Seagate Exos SAS HDDs (`sdb`, `sdc`) pooled as ZFS Mirror `zfs-pool` for Matrix Cloud Tier virtualization.
+    - ZFS Mirror Pool: 2x 10TB Seagate Exos SAS HDDs (`sdb`, `sdc`) pooled as ZFS Mirror `zfs-pool` for matrix Cloud Tier virtualization.
   - **Network Controller:**
     - `nic0`: Onboard Realtek RTL8126 5GbE Controller (MAC: `34:5a:60:ba:86:5b`, PVE Bridge `vmbr0`)
     - `nic1`: Down/Available
-    - `nic2`: 10G 10Gtek PCIe Card (Direct-attach 10G SFP+ storage link to Matrix, IP: `fddd::2/64`)
+    - `nic2`: 10G 10Gtek PCIe Card (Direct-attach 10G SFP+ storage link to matrix, IP: `fddd::2/64`)
     - Qualcomm WCN785x Wi-Fi 7 Controller (`wlp7s0`, disabled)
 - **Services (SAN):**
   - **iSCSI LIO Target (`targetcli`):** `iqn.2024-01.local.homelab:skynet-target` exporting `sda` and `sdd` LUNs over 10G portal `[fddd::2]:3260`.
-  - **Proxmox Backup Server:** Datastore `Backups` listening natively on `[fddd::2]:8007` (Matrix connects via 10G link)
+  - **Proxmox Backup Server:** Datastore `Backups` listening natively on `[fddd::2]:8007` (matrix connects via 10G link)
 - **VMs / Containers:** None
 - **Software:**
   - **OS:** Debian GNU/Linux 13 (trixie, Debian 13.5)
@@ -79,7 +79,7 @@
   - **Storage:** 238.5G SSD (sda)
 - **Active Services:**
   - **AdGuard Home:** Redundant DNS filtering replica (`/opt/AdGuardHome`, port 53/80).
-  - **adguardhome-sync:** Sync daemon (`/usr/local/bin/adguardhome-sync`) syncing configurations, custom rewrites, and blocklists from CT115 (Matrix) every minute.
+  - **adguardhome-sync:** Sync daemon (`/usr/local/bin/adguardhome-sync`) syncing configurations, custom rewrites, and blocklists from CT115 (matrix) every minute.
 - **Software:**
   - **OS:** Debian GNU/Linux 13 (trixie, 13.5)
   - **Kernel:** 6.12.75+rpt-rpi-v8

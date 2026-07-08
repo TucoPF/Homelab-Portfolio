@@ -23,25 +23,25 @@
 ## Date: 15 March 2026
 
 ### Issue 3: NFS Input/Output Error (EIO) during Large File Transfers
-* **Symptoms:** The `fusion_mover.sh` script failed when moving large files (e.g., 82GB 4K Remux). `rsync` reported `Input/output error (5)`. `journalctl` on Matrix showed `nfs: server 192.168.1.50 not responding, timed out`.
-* **Diagnosis:** The NFS mount on Matrix was using the `soft` option. During sustained high-throughput writes (82GB+), the Skynet HDD/MergerFS layer occasionally lagged behind, causing the NFS client to reach its retransmission limit and return a hard error to the application (rsync).
-* **Fix Applied:** Changed the NFS mount type from `soft` to `hard` on Matrix. Increased `timeo` to 600 (60 seconds) and `retrans` to 5 to allow the client to wait indefinitely for the server to recover instead of failing the transfer.
+* **Symptoms:** The `fusion_mover.sh` script failed when moving large files (e.g., 82GB 4K Remux). `rsync` reported `Input/output error (5)`. `journalctl` on matrix showed `nfs: server 192.168.1.50 not responding, timed out`.
+* **Diagnosis:** The NFS mount on matrix was using the `soft` option. During sustained high-throughput writes (82GB+), the skynet HDD/MergerFS layer occasionally lagged behind, causing the NFS client to reach its retransmission limit and return a hard error to the application (rsync).
+* **Fix Applied:** Changed the NFS mount type from `soft` to `hard` on matrix. Increased `timeo` to 600 (60 seconds) and `retrans` to 5 to allow the client to wait indefinitely for the server to recover instead of failing the transfer.
 * **Implementation:**
-  1. Modified `/etc/fstab` on Matrix: Changed `soft` to `hard,timeo=600,retrans=5`.
+  1. Modified `/etc/fstab` on matrix: Changed `soft` to `hard,timeo=600,retrans=5`.
   2. Applied changes: `sudo systemctl daemon-reload && sudo umount -l /mnt/skynet_pool && sudo mount /mnt/skynet_pool`.
 
-### Issue 4: Network Loop / Intel vPro Conflict on Matrix
+### Issue 4: Network Loop / Intel vPro Conflict on matrix
 * **Symptoms:** `dmesg` logs flooded with `received packet on nic1 with own address as source address` every 120 seconds.
 * **Diagnosis:** The Intel vPro/AMT management firmware shares the physical RJ45 port of `nic1` (Intel i225/i226). Proxmox's `vmbr1` bridge was receiving its own reflected packets, causing potential instability or switch port blocking.
 * **Fix Applied:** Migrated the Proxmox bridge (`vmbr1`) to a different physical port (**`nic0`**) to isolate OS traffic from the vPro/AMT management traffic.
 * **Implementation:**
   1. Physically moved the RJ45 cable from `nic1` to `nic0`.
-  2. Modified `/etc/network/interfaces` on Matrix: Changed `bridge-ports nic1` to `bridge-ports nic0`.
+  2. Modified `/etc/network/interfaces` on matrix: Changed `bridge-ports nic1` to `bridge-ports nic0`.
   3. Verified `dmesg` for the absence of loop warnings.
 
-### Issue 5: Slow Shutdown/Reboot on Matrix (Proxmox Hang)
-* **Symptoms:** Matrix took 5-10 minutes to reboot, often hanging during the shutdown of LXC containers (101/Jellyfin and 102/Arr-Stack).
-* **Diagnosis:** Containers were using a MergerFS mount (`/home/tuco/fusion`) that depends on a remote NFS mount (Skynet). During shutdown, the network or NFS was being stopped *before* the containers, causing MergerFS to freeze and Proxmox to hang while waiting for the containers to exit.
+### Issue 5: Slow Shutdown/Reboot on matrix (Proxmox Hang)
+* **Symptoms:** matrix took 5-10 minutes to reboot, often hanging during the shutdown of LXC containers (101/Jellyfin and 102/Arr-Stack).
+* **Diagnosis:** Containers were using a MergerFS mount (`/home/tuco/fusion`) that depends on a remote NFS mount (skynet). During shutdown, the network or NFS was being stopped *before* the containers, causing MergerFS to freeze and Proxmox to hang while waiting for the containers to exit.
 * **Fix Applied:** Added a systemd override for the `pve-guests.service` to ensure containers are stopped *before* the fusion mount is touched.
 * **Implementation:**
   1. Created `/etc/systemd/system/pve-guests.service.d/override.conf`.
@@ -75,7 +75,7 @@
   3. **Daemon Initialization:** Removed the daemon service from docker-compose, stopped the existing container, and manually ran the `docker run` command provided by the Web GUI (ensuring `SCANOPY_SERVER_URL` was set to the Pi's IP, `192.168.1.100`). This injected the correct `SCANOPY_DAEMON_API_KEY` and `SCANOPY_NETWORK_ID`, successfully establishing the connection and starting network discovery.
 ## Date: 17 March 2026
 
-### Issue 8: Broken Default Shell on Matrix (Minisforum)
+### Issue 8: Broken Default Shell on matrix (Minisforum)
 * **Symptoms:** SSH returned `Permission denied (publickey)` and the Proxmox local console displayed `root -- no shell: no such file or directory`.
 * **Diagnosis:** The default shell for both `root` and `tuco` was changed to `zsh` before the package was actually installed on the system. Since the specified shell path was invalid, the OS refused all login attempts.
 * **Fix Applied:** Used the GRUB `init=/bin/bash` method to gain a temporary root shell, bypassed the broken login process, and reset the shells to `/bin/bash`.
@@ -145,8 +145,8 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 3 April 2026
 
-### Issue 12: Skynet Storage Expansion & Optimization (10TB SAS Upgrade)
-* **Symptoms:** Skynet "disk1" (1TB SSD) needed replacement to expand capacity for the "Fusion" tiered storage. A new 10TB SAS Enterprise drive (ST10000NM0096) was inserted but appeared empty/unformatted despite existing NTFS partitions.
+### Issue 12: skynet Storage Expansion & Optimization (10TB SAS Upgrade)
+* **Symptoms:** skynet "disk1" (1TB SSD) needed replacement to expand capacity for the "Fusion" tiered storage. A new 10TB SAS Enterprise drive (ST10000NM0096) was inserted but appeared empty/unformatted despite existing NTFS partitions.
 * **Diagnosis:** 
     1. **Data Recovery:** `testdisk` scan confirmed the MFT was corrupted or wiped (likely a Quick Format), making original files inaccessible. User opted to wipe and repurpose the drive.
     2. **Protocol Conflict:** `hdparm` failed to manage the drive because it uses the SAS (SCSI) protocol instead of ATA/SATA.
@@ -154,10 +154,10 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 * **Fix Applied:** Formatted the drive as EXT4 with the `disk1` label, reclaimed "lost" space by reducing reserved blocks, and configured SAS-specific power management.
 * **Implementation:**
     1. **Wipe & Format:** Used `mkfs.ext4 -F -L disk1 /dev/sda` after clearing the partition table with `fdisk`.
-    2. **Space Reclamation:** Reduced EXT4 reserved space to **1%** on all Skynet HDDs and the Matrix Cache NVMe using `sudo tune2fs -m 1 /dev/sdX`. Reclaimed ~550GB of total capacity across the lab.
+    2. **Space Reclamation:** Reduced EXT4 reserved space to **1%** on all skynet HDDs and the matrix Cache NVMe using `sudo tune2fs -m 1 /dev/sdX`. Reclaimed ~550GB of total capacity across the lab.
     3. **SAS Power Management:** Installed `sdparm` and `sg3-utils`. Disabled `IDLE_A` and `IDLE_B` states to prevent mechanical wear from frequent spin-downs: `sudo sdparm --set=IDLE_B=0 --save /dev/sda`.
     4. **Performance Verification:** Confirmed raw write speeds of **~230MB/s** using `dd` with `oflag=direct`.
-    5. **Data Migration:** Restored files from Matrix NVMe back to Skynet using `rsync -avhP --preallocate --remove-source-files`. The `--preallocate` flag was used to ensure contiguous sector writes on the new 10TB platters.
+    5. **Data Migration:** Restored files from matrix NVMe back to skynet using `rsync -avhP --preallocate --remove-source-files`. The `--preallocate` flag was used to ensure contiguous sector writes on the new 10TB platters.
 
 ### Issue 13: Fingerprint Reader "Device already claimed" (UEFI Fix)
 * **Date:** 3 April 2026
@@ -276,7 +276,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 23 April 2026
 
-### Issue 21: Skynet Backplane Noise Investigation and Safe Shutdown
+### Issue 21: skynet Backplane Noise Investigation and Safe Shutdown
 * **Symptoms:** Strange noise originating from the Icybox IB-544SSK backplane on the `skynet` server.
 * **Diagnosis:** Ran SMART short tests on all 4 SAS drives (`sda`, `sdb`, `sdc`, `sdd`). Tests passed with no errors. Spun down drives `sdb`, `sdc`, `sdd` and finally `sda` using `sg_start --stop`, confirming the noise was not the drives but likely the backplane fan.
 * **Findings:** `sda` (Serial: ZA29BN5M0000C9091B6V) reported 3 reassigned blocks in SMART health status. This needs to be monitored to see if the number grows. The other three drives reported 0 reassigned blocks.
@@ -400,25 +400,25 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 28 May 2026
 
-### Issue 27: Skynet Transition from Proxmox Backup Server (PBS) to Native Proxmox Virtual Environment (PVE)
-* **Symptoms:** Skynet was running a legacy dedicated PBS setup. The user wanted to transition Skynet into a fully native Proxmox Virtual Environment (PVE 9) compute/storage node while preserving the physical MergerFS media pool and ZFS cloud pool intact.
+### Issue 27: skynet Transition from Proxmox Backup Server (PBS) to Native Proxmox Virtual Environment (PVE)
+* **Symptoms:** skynet was running a legacy dedicated PBS setup. The user wanted to transition skynet into a fully native Proxmox Virtual Environment (PVE 9) compute/storage node while preserving the physical MergerFS media pool and ZFS cloud pool intact.
 * **Diagnosis:** Upgrading/converting required a clean PVE installation on the primary OS NVMe drive (`nvme0n1`), followed by restoring full homelab custom configurations (1Password passwordless SSH-agent sudo authorization, MergerFS tiering, custom shell profiles, NFS exports, and the nightly storage mover script).
 * **Fix Applied:** Formatted and installed PVE 9 natively on the NVMe system drive, safely preserved and imported ZFS and MergerFS pools, restored PAM SSH-agent auth permissions, and updated all system and shell profiles.
 * **Implementation:**
   1. **Clean Installation:** Formatted the 1TB NVMe system drive and installed native PVE 9 (`pve-manager/9.2.3`, kernel `7.0.2-6-pve`).
   2. **Storage Reconstruction:** Imported the ZFS pool (`zpool import -f cloud_pool`), remounted the 4x 10TB Seagate Exos partitions via `LABEL=diskX`, and successfully reconstituted the 35TB MergerFS pool at `/mnt/skynet-pool`.
-  3. **Network Configuration & Mounts:** Bound Matrix's NFS mounts, configured `/etc/exports` to export `/mnt/skynet-pool` and `/mnt/cloud` back to Matrix, and verified `systemd-automount` triggers.
+  3. **Network Configuration & Mounts:** Bound matrix's NFS mounts, configured `/etc/exports` to export `/mnt/skynet-pool` and `/mnt/cloud` back to matrix, and verified `systemd-automount` triggers.
   4. **PAM Sudo SSH-Agent Restoration:** Restored `pam_ssh_agent_auth.so` for passwordless sudo, adjusted the authorized keys ownership and permissions to `644` under `/etc/ssh/sudo_authorized_keys/tuco`, and preserved the `SSH_AUTH_SOCK` variable.
   5. **Shell Customization:** Set up Zsh profiles (`.zshrc`) for `root` (with `jellyfin` and `arr` LXC pct entrance shortcuts) and changed the default shell of `root` to `/bin/zsh`.
 
 ## Date: 29 May 2026
 
-### Issue 28: Idle Clicking/Ticking Noise on Skynet SAS Pool Drive (/dev/sda)
+### Issue 28: Idle Clicking/Ticking Noise on skynet SAS Pool Drive (/dev/sda)
 * **Symptoms:** An audible, periodic "clickety" or ticking sound was coming from the Jonsbo N5 chassis when the storage pool was idle, isolated specifically to `/dev/sda`. Later, it was observed that when waking up the pool, `/dev/sda` would perform a clicking/ticking calibration routine for approximately 1 minute before becoming quiet.
 * **Diagnosis:** Checked the Extended Power Conditions (EPC) using `sdparm`. Originally, `/dev/sda` had `Idle_A` and `Idle_B` disabled (`0`), while the other drives had them enabled (`1`). Aligning `sda` to match the others resolved the initial idle clicking. However, on wake-up from the deep `Idle_B` state, `/dev/sda` still performed a 1-minute calibration. This is because `/dev/sda` is the only drive in the pool with remapped sectors in its Grown Defect List (G-List: 3 sectors, healthy and stable). Upon waking from deep idle, the drive firmware runs a Thermal Fly-height Control (TFC) and track-alignment sweep to verify physical boundaries for these remapped blocks. The other drives have 0 grown defects and therefore woke up silently.
 * **Reversion / Final Resolution:** We attempted to disable `Idle_B` on all drives to force them into `Idle_A` (heads unparked), hoping to bypass the wake-up calibration noise. However, this forced the Seagate Exos firmware to keep the heads loaded in active tracking mode, which triggered rapid, continuous seeking cliquetis (multiple times per second) due to Preventive Wear Leveling (PWL) and active track alignment. Since the pool is only active once a day (at 3:00 AM for the nightly MergerFS mover), this high-frequency noise was unacceptable. All drives were reverted back to their original factory defaults (`sda` at `IDLE_A=0`/`IDLE_B=0`, and `sdb`/`sdc`/`sdd` at `IDLE_A=1`/`IDLE_B=1`), restoring silence when idle.
 * **Implementation:**
-  1. Gained SSH access to Skynet (`192.168.1.200`).
+  1. Gained SSH access to skynet (`192.168.1.200`).
   2. Reverted power conditions to original states:
      ```bash
      sdparm --set=IDLE_A=0 --save /dev/sda
@@ -429,7 +429,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      done
      ```
   3. Silenced the active drive immediately: `sg_start --stop /dev/sda`.
-  4. **Finalized on 30 May 2026**: Implemented a robust boot-time systemd service (`sas-power-management.service`) and helper script (`/usr/local/bin/sas-power-management.sh`) on Skynet. This service dynamically discovers all Seagate Exos drives on boot and locks them in `Idle_B` deep idle (heads safely parked, spindles spinning) to achieve complete silence when not in use while avoiding mechanical spindle start/stop motor wear. Verified all four drives (`sda`, `sdb`, `sdc`, `sdd`) were successfully and flawlessly configured at runtime.
+  4. **Finalized on 30 May 2026**: Implemented a robust boot-time systemd service (`sas-power-management.service`) and helper script (`/usr/local/bin/sas-power-management.sh`) on skynet. This service dynamically discovers all Seagate Exos drives on boot and locks them in `Idle_B` deep idle (heads safely parked, spindles spinning) to achieve complete silence when not in use while avoiding mechanical spindle start/stop motor wear. Verified all four drives (`sda`, `sdb`, `sdc`, `sdd`) were successfully and flawlessly configured at runtime.
 
 ## Date: 30 May 2026
 
@@ -452,12 +452,12 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 ## Date: 3 June 2026
 
 ### Issue 30: Proxmox "Backup" Storage Activation Failure (Multi-Node Mount Expectation)
-* **Symptoms:** Trying to activate a newly configured SSD (repurposed 1TB NVMe) as a directory storage (`Backup`) on both Proxmox nodes (`Skynet` and `matrix`) failed on `matrix` with `TASK ERROR: could not activate storage 'Backup': unable to activate storage 'Backup' - directory is expected to be a mount point but is not mounted: '/mnt/pve/Backup'`. The Backup storage remained inactive in the WebGUI.
-* **Diagnosis:** The storage was defined in `/etc/pve/storage.cfg` with `is_mountpoint 1` and restricted to `nodes Skynet,matrix`. Because the physical SSD is plugged into `Skynet`, Proxmox successfully mounted it there via systemd (`mnt-pve-Backup.mount`), but the directory `/mnt/pve/Backup` on `matrix` had no underlying mount, causing PVE's mount check to fail.
-* **Fix Applied:** Exported `/mnt/pve/Backup` from `Skynet` over NFS and mounted it on `matrix` via `/etc/fstab` using systemd automount. This ensures `/mnt/pve/Backup` is an active mount point on both nodes, resolving the Proxmox validation checks.
+* **Symptoms:** Trying to activate a newly configured SSD (repurposed 1TB NVMe) as a directory storage (`Backup`) on both Proxmox nodes (`skynet` and `matrix`) failed on `matrix` with `TASK ERROR: could not activate storage 'Backup': unable to activate storage 'Backup' - directory is expected to be a mount point but is not mounted: '/mnt/pve/Backup'`. The Backup storage remained inactive in the WebGUI.
+* **Diagnosis:** The storage was defined in `/etc/pve/storage.cfg` with `is_mountpoint 1` and restricted to `nodes skynet,matrix`. Because the physical SSD is plugged into `skynet`, Proxmox successfully mounted it there via systemd (`mnt-pve-Backup.mount`), but the directory `/mnt/pve/Backup` on `matrix` had no underlying mount, causing PVE's mount check to fail.
+* **Fix Applied:** Exported `/mnt/pve/Backup` from `skynet` over NFS and mounted it on `matrix` via `/etc/fstab` using systemd automount. This ensures `/mnt/pve/Backup` is an active mount point on both nodes, resolving the Proxmox validation checks.
 * **Implementation:**
-    1. **NFS Export (Skynet):** Added `/mnt/pve/Backup matrix(rw,sync,no_subtree_check,no_root_squash,fsid=104)` to `/etc/exports` and reloaded using `sudo exportfs -arv`. Note: `no_root_squash` is critical to allow Proxmox to run root-level `vzdump` backup tasks over NFS.
-    2. **Mount Setup (Matrix):** Created the target mount directory (`sudo mkdir -p /mnt/pve/Backup`) and appended the automount configuration to `/etc/fstab`:
+    1. **NFS Export (skynet):** Added `/mnt/pve/Backup matrix(rw,sync,no_subtree_check,no_root_squash,fsid=104)` to `/etc/exports` and reloaded using `sudo exportfs -arv`. Note: `no_root_squash` is critical to allow Proxmox to run root-level `vzdump` backup tasks over NFS.
+    2. **Mount Setup (matrix):** Created the target mount directory (`sudo mkdir -p /mnt/pve/Backup`) and appended the automount configuration to `/etc/fstab`:
        ```text
        skynet:/mnt/pve/Backup /mnt/pve/Backup nfs noauto,x-systemd.automount,x-systemd.device-timeout=5,hard,timeo=600,retrans=5,noatime,_netdev 0 0
        ```
@@ -473,7 +473,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
     1. **Ansible Playbook Creation:** Created `/home/tuco/scripts/ansible-updates/setup_unattended_upgrades.yml` to automate deployment.
     2. **Dependencies:** Installed `unattended-upgrades`, `python3-gi`, `powermgmt-base`, and `apt-listchanges` on both nodes.
     3. **Periodic Config:** Deployed `/etc/apt/apt.conf.d/20auto-upgrades` to trigger checks daily.
-    4. **Safety Profile:** Deployed `/etc/apt/apt.conf.d/50unattended-upgrades` with `Unattended-Upgrade::Origins-Pattern` configured to allow automated updates, enabled auto-cleanup of unused dependencies, and configured staggered `Automatic-Reboot "true"` windows (04:30 AM on Skynet, 05:00 AM on Matrix) to ensure storage target priority.
+    4. **Safety Profile:** Deployed `/etc/apt/apt.conf.d/50unattended-upgrades` with `Unattended-Upgrade::Origins-Pattern` configured to allow automated updates, enabled auto-cleanup of unused dependencies, and configured staggered `Automatic-Reboot "true"` windows (04:30 AM on skynet, 05:00 AM on matrix) to ensure storage target priority.
     5. **Verification:** Ran `sudo unattended-upgrades --dry-run --debug` on both `matrix` and `skynet` to verify the rules and confirm no warnings or errors were present.
 
 ## Date: 07 June 2026
@@ -491,20 +491,20 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 ## Date: 09 June 2026
 
 ### Issue 33: Proxmox Cluster Crash (Systemd Boot Loop)
-* **Symptoms:** The Proxmox cluster completely failed to form upon reboot. Matrix reported `Cannot initialize CMAP service`, `corosync.service` was completely dead, and `pvestatd` locked the `/etc/pve` filesystem. Skynet remained online but lost quorum.
+* **Symptoms:** The Proxmox cluster completely failed to form upon reboot. matrix reported `Cannot initialize CMAP service`, `corosync.service` was completely dead, and `pvestatd` locked the `/etc/pve` filesystem. skynet remained online but lost quorum.
 * **Diagnosis:** A legacy systemd override (`/etc/systemd/system/zfs-import-cache.service.d/override.conf`) was forcing ZFS to wait for `open-iscsi.service`. This created an unbreakable systemd dependency loop: `zfs` -> `iscsi` -> `network-online.target` -> `networking` -> `local-fs` -> `zfs`. To break the loop, systemd's non-deterministic resolver arbitrarily killed the `network-online.target` startup job, causing the network-dependent `corosync.service` to abort.
 * **Fix Applied:** Dismantled the dependency loop by deleting the rogue ZFS override, and established a completely resilient MergerFS mount topology using standard `fstab` ordering. Re-established the LXC container shutdown hook (`pve-guests`) to target the correct iSCSI fusion mount path.
 * **Implementation:**
     1. **Broke the Loop:** Deleted `/etc/systemd/system/zfs-import-cache.service.d/override.conf`. ZFS cache imports will now safely fail early and be dynamically imported by `pvestatd` later.
-    2. **Resilient Fstab:** Edited `/etc/fstab` on Matrix. Changed MergerFS pool and fusion options to include `_netdev`, `nofail`, and `x-systemd.after=...` pointing to their respective underlying storage arrays. This enforces the correct mount order during a healthy boot but allows Matrix to boot gracefully into an emergency-free state even if Skynet is offline.
+    2. **Resilient Fstab:** Edited `/etc/fstab` on matrix. Changed MergerFS pool and fusion options to include `_netdev`, `nofail`, and `x-systemd.after=...` pointing to their respective underlying storage arrays. This enforces the correct mount order during a healthy boot but allows matrix to boot gracefully into an emergency-free state even if skynet is offline.
     3. **Container Shutdown Hook:** Recreated `/etc/systemd/system/pve-guests.service.d/override.conf` with `After=mnt-fusion.mount` to prevent Proxmox from hanging for 10 minutes by ensuring containers are cleanly stopped before the network backend is unmounted.
 
 ## Date: 16 June 2026
 
 ### Issue 34: Windows 1Password SSH Agent Forwarding & Debian VM Setup
 * **Symptoms:** 
-  1. The Windows OpenSSH client failed to connect to the 1Password SSH Agent, logging `get_agent_identities: ssh_get_authentication_socket: No such file or directory` and prompting for passwords on Matrix and Skynet.
-  2. The newly created Debian VM (VM 1000, `Laptop` on Skynet) was unreachable via SSH, lacked an IPv6 ULA, and did not support passwordless `sudo` via forwarded agent.
+  1. The Windows OpenSSH client failed to connect to the 1Password SSH Agent, logging `get_agent_identities: ssh_get_authentication_socket: No such file or directory` and prompting for passwords on matrix and skynet.
+  2. The newly created Debian VM (VM 1000, `Laptop` on skynet) was unreachable via SSH, lacked an IPv6 ULA, and did not support passwordless `sudo` via forwarded agent.
 * **Diagnosis:**
   1. The Windows SSH config file (`C:\Users\tuco\.ssh\config`) contained the legacy directive `IdentityAgent "\\.\pipe\openssh-ssh-agent"`. Modern Windows OpenSSH interprets this as a UNIX domain socket filesystem path, failing to locate it, whereas it natively defaults to the Named Pipe without this directive.
   2. Sudo on the Debian VM stripped the `SSH_AUTH_SOCK` environment variable, preventing the `pam_ssh_agent_auth.so` PAM module from communicating with the forwarded 1Password agent.

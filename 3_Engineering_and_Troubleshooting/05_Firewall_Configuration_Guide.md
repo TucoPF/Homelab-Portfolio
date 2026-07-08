@@ -15,7 +15,7 @@ This document tracks the setup and configuration of `firewalld` on the Arch Linu
 - Enabled and started the service: `sudo systemctl enable --now firewalld`
 
 ### 2. Tailscale Configuration (Trusted Zone)
-Tailscale traffic is fully trusted to allow seamless communication with the homelab (Matrix, Skynet, Pi4, etc.).
+Tailscale traffic is fully trusted to allow seamless communication with the homelab (matrix, skynet, Pi4, etc.).
 - Assigned `tailscale0` to the `trusted` zone:
   `sudo firewall-cmd --zone=trusted --add-interface=tailscale0 --permanent`
 

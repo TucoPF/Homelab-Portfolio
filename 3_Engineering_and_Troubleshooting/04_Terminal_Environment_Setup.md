@@ -1,7 +1,7 @@
 # Terminal Environment Setup: Homelab Synchronization (Zsh)
 
 ## Objective
-To standardize the shell environment across the entire homelab (Matrix, Skynet, Pi4), ensuring identical aliases, prompt behaviors (Tuco/Root distinction), and modern productivity features while maintaining high performance.
+To standardize the shell environment across the entire homelab (matrix, skynet, Pi4), ensuring identical aliases, prompt behaviors (Tuco/Root distinction), and modern productivity features while maintaining high performance.
 
 ## Architecture & Deployment Strategy
 1. **Universal Template:** A single `.zshrc` template is maintained locally and synchronized across all nodes. This ensures that a new alias added to the template is instantly available everywhere after a deployment.
@@ -14,7 +14,7 @@ This template is the "Source of Truth" for the entire homelab.
 
 ```zsh
 # Universal Zsh Configuration for Homelab
-# Optimized for Matrix, Skynet, Pi4 and Root accounts
+# Optimized for matrix, skynet, Pi4 and Root accounts
 
 # --- Basic & Navigation Aliases ---
 alias ls='ls --color=auto'

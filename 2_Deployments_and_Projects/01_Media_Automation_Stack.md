@@ -1,14 +1,14 @@
 # Homelab Arr-Stack & Jellyfin Setup (March 6, 2026)
 
-This document summarizes the current working configuration of the Arr-Stack (LXC 103), Jellyfin (LXC 101), and NZBGet (LXC 102) on the **Matrix** Proxmox node.
+This document summarizes the current working configuration of the Arr-Stack (LXC 103), Jellyfin (LXC 101), and NZBGet (LXC 102) on the **matrix** Proxmox node.
 
 ## 🏗️ Architecture Summary
-- **Matrix (Node 1):** 192.168.1.100
+- **matrix (Node 1):** 192.168.1.100
 - **LXC 101 (Jellyfin):** 192.168.1.101
 - **LXC 102 (NZBGet):** 192.168.1.102 (Native LXC, "Fusion Trick" NVMe mount)
 - **LXC 103 (Arr-Stack):** 192.168.1.103 (Docker-based)
 - **Storage:** `mergerfsPool` mounted at `/mnt/fusion` in the Jellyfin and Arr-Stack containers.
-  - Underlying Branches: `/mnt/matrix-cache` (NVMe cache), `/mnt/matrix-pool` (local EXT4 disk pool mapped via iSCSI from Skynet).
+  - Underlying Branches: `/mnt/matrix-cache` (NVMe cache), `/mnt/matrix-pool` (local EXT4 disk pool mapped via iSCSI from skynet).
 
 ## 🚀 Service Configuration
 
@@ -63,7 +63,7 @@ The media automation environment is structured as a robust hybrid architecture, 
     - **Seerr** (Port 5055)
 
 ### 📥 Download Clients & Caching (NZBGet LXC 102)
-- **The "Fusion Trick":** NZBGet mounts the raw high-speed Matrix NVMe `/mnt/matrix-cache` to `/mnt/fusion`. The Arr containers mount the actual MergerFS pool (`/mnt/fusion`). Because the paths match perfectly (`/mnt/fusion/downloads/complete` to `/mnt/fusion/movies`), imports are processed instantly as atomic hardlinks on the NVMe cache tier.
+- **The "Fusion Trick":** NZBGet mounts the raw high-speed matrix NVMe `/mnt/matrix-cache` to `/mnt/fusion`. The Arr containers mount the actual MergerFS pool (`/mnt/fusion`). Because the paths match perfectly (`/mnt/fusion/downloads/complete` to `/mnt/fusion/movies`), imports are processed instantly as atomic hardlinks on the NVMe cache tier.
 - **NZBGet Performance Settings:**
   - `MainDir`: `/mnt/fusion/downloads/nzbget`
   - `ArticleCache`: 2048 (2GB RAM Cache)

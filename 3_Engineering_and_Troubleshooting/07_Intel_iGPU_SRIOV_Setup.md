@@ -1,4 +1,4 @@
-# Intel iGPU SR-IOV Split Configuration & Update Guide (Matrix)
+# Intel iGPU SR-IOV Split Configuration & Update Guide (matrix)
 
 This document outlines the setup, architecture, and update survival procedure for the Intel Core i9-13900H integrated GPU (Iris Xe Graphics) split using SR-IOV on **matrix** (Minisforum MS01).
 
@@ -70,7 +70,7 @@ If the VFs are missing after a kernel update, run the following steps on **matri
     ```bash
     sudo dkms status
     ```
-5.  **Reboot Matrix**:
+5.  **Reboot matrix**:
     ```bash
     sudo reboot
     ```

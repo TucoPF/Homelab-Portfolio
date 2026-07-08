@@ -4,26 +4,26 @@
 This section reflects the transition from ZFS-over-iSCSI to a native NFS Datastore to eliminate systemd boot loops, and the implementation of God-Mode ACLs to purify Proxmox container permissions.
 
 ### 🏗️ Architecture Overview
-*   **SAN Backend (Skynet):**
+*   **SAN Backend (skynet):**
     *   **Hardware:** 4x 10TB Seagate Exos SAS HDDs.
     *   **Role:** Exports 2 raw SAS block devices over the network via iSCSI LIO for the Media Tier. Natively pools the other 2 drives into a ZFS Mirror (`zfs-pool`) and exports a dataset via NFS for the Cloud/Compute Tier.
-*   **The Brain / Compute (Matrix):**
-    *   **Role:** Connects to Skynet via iSCSI to map the 2 Media LUNs locally as `sda`, `sdd`. Connects to the Skynet ZFS pool via native NFS (`Skynet-NFS`) for isolated Proxmox LXC virtual disks.
+*   **The Brain / Compute (matrix):**
+    *   **Role:** Connects to skynet via iSCSI to map the 2 Media LUNs locally as `sda`, `sdd`. Connects to the skynet ZFS pool via native NFS (`skynet-NFS`) for isolated Proxmox LXC virtual disks.
 *   **Storage Pools:**
-    *   **Cloud Tier (Skynet Native):** ~10TB high-integrity ZFS Mirror at `zfs-pool`. Exported via NFS (`/zfs-pool/pve-nfs`) over the 10G `fddd::/64` link.
-    *   **Media Tier (Matrix Managed):** ~18TB usable (EXT4 `disk1` and `disk2` pooled via MergerFS at `/mnt/matrix-pool` on Matrix).
-*   **The Glue:** MergerFS on Matrix combines the local SSD cache (`/mnt/matrix-cache`) and the Media Tier HDD pool (`/mnt/matrix-pool`) at `/mnt/fusion`.
+    *   **Cloud Tier (skynet Native):** ~10TB high-integrity ZFS Mirror at `zfs-pool`. Exported via NFS (`/zfs-pool/pve-nfs`) over the 10G `fddd::/64` link.
+    *   **Media Tier (matrix Managed):** ~18TB usable (EXT4 `disk1` and `disk2` pooled via MergerFS at `/mnt/matrix-pool` on matrix).
+*   **The Glue:** MergerFS on matrix combines the local SSD cache (`/mnt/matrix-cache`) and the Media Tier HDD pool (`/mnt/matrix-pool`) at `/mnt/fusion`.
 
 ### 💾 Partition & Hardware Mapping
-| iSCSI LUN (Skynet) | Local Block (Matrix) | Filesystem | Role / Pool |
+| iSCSI LUN (skynet) | Local Block (matrix) | Filesystem | Role / Pool |
 | :--- | :--- | :--- | :--- |
 | `disk1` (LUN 0) | `/dev/sda` | `ext4` (LABEL=disk1) | Media Tier (`matrix-pool`) |
 | `disk2` (LUN 1) | `/dev/sdb` | `ext4` (LABEL=disk2) | Media Tier (`matrix-pool`) |
-| N/A (Skynet Native) | N/A | ZFS Member (`/dev/sdb` on Skynet)| Cloud Tier (`zfs-pool` Mirror) |
-| N/A (Skynet Native) | N/A | ZFS Member (`/dev/sdc` on Skynet)| Cloud Tier (`zfs-pool` Mirror) |
+| N/A (skynet Native) | N/A | ZFS Member (`/dev/sdb` on skynet)| Cloud Tier (`zfs-pool` Mirror) |
+| N/A (skynet Native) | N/A | ZFS Member (`/dev/sdc` on skynet)| Cloud Tier (`zfs-pool` Mirror) |
 
 ### 📝 Core Configuration Files
-#### Matrix (`/etc/fstab`) - Hardware Execution Lock
+#### matrix (`/etc/fstab`) - Hardware Execution Lock
 All physical media layers are mounted with `noexec` to prevent malicious script execution, counterbalancing the public `777` ACLs.
 ```text
 # Local NVMe Cache SSD (Samsung 990 Pro)
@@ -33,21 +33,21 @@ UUID=3f74a8bb-8adc-44b0-a2a1-093ed387c4c0  /mnt/matrix-cache  ext4  defaults,noa
 LABEL=disk1 /mnt/disk1 ext4 _netdev,noatime,nofail,noexec 0 2
 LABEL=disk2 /mnt/disk2 ext4 _netdev,noatime,nofail,noexec 0 2
 
-# Matrix MergerFS Pool (Local HDDs)
+# matrix MergerFS Pool (Local HDDs)
 /mnt/disk1:/mnt/disk2 /mnt/matrix-pool mergerfs defaults,nonempty,allow_other,use_ino,cache.files=partial,dropcacheonclose=true,category.create=epmfs,minfreespace=20G,_netdev,nofail,noexec,x-systemd.after=/mnt/disk1,x-systemd.after=/mnt/disk2 0 0
 
 # Fusion Tiered Pool (Local NVMe Cache + Local HDD Pool)
 /mnt/matrix-cache:/mnt/matrix-pool /mnt/fusion mergerfs defaults,nonempty,allow_other,use_ino,cache.files=partial,dropcacheonclose=true,attr_timeout=2,entry_timeout=2,category.create=ff,minfreespace=20G,_netdev,nofail,noexec,x-systemd.after=/mnt/matrix-pool,x-systemd.after=/mnt/matrix-cache 0 0
 ```
 
-#### Skynet NFS Export (`/etc/exports`)
-Skynet natively hosts the ZFS pool and explicitly exports it to Matrix over the 10G link, avoiding Proxmox iSCSI loopback complications.
+#### skynet NFS Export (`/etc/exports`)
+skynet natively hosts the ZFS pool and explicitly exports it to matrix over the 10G link, avoiding Proxmox iSCSI loopback complications.
 ```text
 /zfs-pool/pve-nfs fddd::/64(rw,sync,no_root_squash,no_subtree_check) 
 ```
 
 ### ⚙️ Proxmox Storage Configuration (`/etc/pve/storage.cfg`)
-Matrix dynamically consumes the Skynet NFS export. The storage is explicitly restricted to `nodes matrix` to prevent Skynet from loopback-mounting its own NFS export.
+matrix dynamically consumes the skynet NFS export. The storage is explicitly restricted to `nodes matrix` to prevent skynet from loopback-mounting its own NFS export.
 ```text
 nfs: nfs
 	export /zfs-pool/pve-nfs
@@ -79,12 +79,12 @@ nfs: nfs
 ### 🔄 Automation: The Nightly Mover (Optimized systemd Mover)
 *   **Logic:** It checks the local high-speed SSD cache (`/mnt/matrix-cache`) for movies, shows, and music files that have been idle (unmodified) for > 120 minutes, and transfers them to the sub-pool `matrix-pool`.
 *   **Balancing:** Because it writes to `matrix-pool`, MergerFS automatically balances the writes across `disk1` and `disk2` using the `epmfs` policy.
-*   **Script Location (Matrix):** `/home/tuco/scripts/fusion_mover.sh`
+*   **Script Location (matrix):** `/home/tuco/scripts/fusion_mover.sh`
 
 ### 🧠 Key Architecture & Troubleshooting Learnings
 1. **ZFS over iSCSI Systemd Death Loop:**
-    *   **Issue:** Attempting to run a native ZFS pool on Matrix over iSCSI block devices triggered a fatal `systemd` ordering cycle (`local-fs.target` -> `zfs-mount` -> `open-iscsi`).
-    *   **Fix:** Decoupled ZFS from Matrix entirely. Moved the ZFS pool natively to Skynet and exported it as a standard NFS Datastore to Matrix.
+    *   **Issue:** Attempting to run a native ZFS pool on matrix over iSCSI block devices triggered a fatal `systemd` ordering cycle (`local-fs.target` -> `zfs-mount` -> `open-iscsi`).
+    *   **Fix:** Decoupled ZFS from matrix entirely. Moved the ZFS pool natively to skynet and exported it as a standard NFS Datastore to matrix.
 2. **Purifying Unprivileged Containers (Removing `lxc.idmap`):**
     *   **Issue:** When removing `lxc.idmap` from a container, its physical files on the host are left orphaned at the old Host UID, breaking internal services.
     *   **Fix:** Dynamically shift the ownership on the host by diving into the container's running namespace and updating the old UID to the new default unprivileged UID (`101000`):
@@ -93,4 +93,4 @@ nfs: nfs
         sudo find /proc/$PID/root/ -xdev \( -uid 1000 -o -gid 1000 \) -exec chown -h 101000:101000 {} +
         ```
 3. **NFS I/O Failures:**
-    *   **Fix:** Resolved large file transfer crashes by transitioning Matrix mounts to `hard,timeo=600,retrans=5`.
+    *   **Fix:** Resolved large file transfer crashes by transitioning matrix mounts to `hard,timeo=600,retrans=5`.

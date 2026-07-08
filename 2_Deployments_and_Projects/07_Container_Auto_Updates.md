@@ -2,11 +2,11 @@
 
 *Date: June 28, 2026*
 
-This document outlines the architecture, scripts, and systemd scheduling used to automatically update all running Proxmox LXC containers and their internal Docker compose stacks on the **Matrix** compute node.
+This document outlines the architecture, scripts, and systemd scheduling used to automatically update all running Proxmox LXC containers and their internal Docker compose stacks on the **matrix** compute node.
 
 ## 🏗️ Architecture & Mechanism
 
-The auto-update system runs centrally on the Proxmox host (**Matrix**) to maintain all active workloads without requiring individual update configurations inside each container:
+The auto-update system runs centrally on the Proxmox host (**matrix**) to maintain all active workloads without requiring individual update configurations inside each container:
 
 1. **Host-Level Script:** A bash script at `/home/tuco/scripts/update_containers.sh` handles orchestration.
 2. **Container Discovery:** The script queries Proxmox for all currently running LXC containers.
@@ -23,7 +23,7 @@ The auto-update system runs centrally on the Proxmox host (**Matrix**) to mainta
 #!/bin/bash
 # ==============================================================================
 # Container Auto-Update Script (LXC & Docker)
-# Runs on Matrix host (Proxmox VE) to update system packages in all running LXC 
+# Runs on matrix host (Proxmox VE) to update system packages in all running LXC 
 # containers and update any Docker compose stacks running inside them.
 # ==============================================================================
 

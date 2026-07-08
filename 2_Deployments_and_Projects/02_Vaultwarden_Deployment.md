@@ -6,10 +6,10 @@
 > As of April 2026, this self-hosted Vaultwarden deployment has been successfully decommissioned. We have transitioned back to using 1Password (integrated via the local 1Password SSH agent socket at `~/.1password/agent.sock` for secure credential and key management). This document remains purely for historical reference.
 
 ## Overview
-Successfully deployed a self-hosted Vaultwarden instance (Bitwarden compatible) on the Skynet Proxmox node. This has been replaced by 1Password.
+Successfully deployed a self-hosted Vaultwarden instance (Bitwarden compatible) on the skynet Proxmox node. This has been replaced by 1Password.
 
 ## Architecture
-* **Host:** Skynet (192.168.1.200)
+* **Host:** skynet (192.168.1.200)
 * **LXC ID:** 111 (Unprivileged Debian 13 - Decommissioned, IP and ID now reused for Wireguard gateway)
 * **LXC IP:** 192.168.1.111
 * **Deployment Method:** Docker Compose inside the LXC.
@@ -27,7 +27,7 @@ Successfully deployed a self-hosted Vaultwarden instance (Bitwarden compatible) 
 * **Method:** Nightly Rsync to MergerFS HDD pool.
 * **Source:** `/mnt/storage/vaultwarden_data/` (Fast NVMe)
 * **Destination:** `/mnt/fusion/backups/vaultwarden/` (Resilient HDDs)
-* **Automation:** Cron job on the Skynet host running daily at 04:00 AM (`/home/tuco/scripts/vaultwarden_backup.sh`).
+* **Automation:** Cron job on the skynet host running daily at 04:00 AM (`/home/tuco/scripts/vaultwarden_backup.sh`).
 
 ## Migration Steps (1Password -> Vaultwarden)
 1. Exported 1Password vault as an unencrypted `.1pux` file (preserves custom fields, tags, secure notes, unlike CSV).

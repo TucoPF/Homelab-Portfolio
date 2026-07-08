@@ -140,16 +140,16 @@ Instead of using the proprietary `fumagician` executable, you can use the standa
 
 A snapshot of the active Samsung NVMe storage in the **Fusion** cluster:
 
-### 🎛️ Matrix (Minisforum MS01 Compute Node)
-Matrix utilizes two top-tier retail **Samsung 990 PRO** drives. Both are running the absolute latest firmware releases (released late 2025/early 2026), ensuring read-stability fixes are fully active.
+### 🎛️ matrix (Minisforum MS01 Compute Node)
+matrix utilizes two top-tier retail **Samsung 990 PRO** drives. Both are running the absolute latest firmware releases (released late 2025/early 2026), ensuring read-stability fixes are fully active.
 
 | Drive Identifier | Model | Capacity | Firmware Version | Total Bytes Written (TBW) | Wear Level (`% used`) | Temp (Controller/NAND) |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `/dev/nvme0n1` | **Samsung 990 PRO 2TB** | 2000 GB | `8B2QJXD7` | **14.6 TB** | **0%** | 40°C / 42°C |
 | `/dev/nvme1n1` | **Samsung 990 PRO 1TB** | 1000 GB | `5B2QJXD7` | **11.1 TB** | **1%** | 43°C / 46°C |
 
-### 📦 Skynet (Storage & Backup Backend)
-Skynet utilizes a Samsung OEM model (**PM9A1**, equivalent to a client 980 Pro) as its primary OS and local datastore disk.
+### 📦 skynet (Storage & Backup Backend)
+skynet utilizes a Samsung OEM model (**PM9A1**, equivalent to a client 980 Pro) as its primary OS and local datastore disk.
 
 | Drive Identifier | Model | Capacity | Firmware Version | Total Bytes Written (TBW) | Wear Level (`% used`) | Temp (Controller/NAND) |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
