@@ -528,3 +528,76 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      ```
      Created `/etc/sudoers.d/ssh_auth_sock` with `Defaults env_keep += "SSH_AUTH_SOCK"`.
   4. **PowerShell Profile Shortcuts:** Appended functions `t`, `m`, `s`, `p` to `$PROFILE`.
+
+## Date: 12 July 2026
+
+### Issue 35: LSI HBA Option ROM Boot Freeze & Linux Flash Bypass
+* **Symptoms:** Motherboard POST hang (MSI debug code 73/92) and 2m30s boot delay caused by LSI SAS2308 HBA Option ROM (BIOS/UEFI BSD) on modern AMD AM5 (MSI X870E) platform.
+* **Diagnosis:** 
+    1. UEFI Shell v1.0 (UDK2014) is incompatible with newer BIOS GOP and freezes on boot (blinking cursor).
+    2. UEFI Shell v2.0 prevents executing legacy `sas2flash.efi` due to the deprecated `EFI_SHELL_INTERFACE` protocol check (`InitShellApp` error).
+    3. Linux `sas2flash` is blocked from executing raw MMIO chip erases (`-e 5`/`-e 6`) by kernel device memory protections (Lockdown/Strict DevMem).
+* **Fix Applied:** Used the interactive 64-bit Linux utility `lsiutil` under Proxmox to perform a BIOS/FCode erase, which bypassed kernel restrictions and wiped the Option ROMs while keeping the active IT mode firmware (`20.00.07.00`) intact.
+* **Implementation:**
+    1. **Tool Acquisition:** Downloaded the static 64-bit binary:
+       ```bash
+       wget -O /tmp/lsiutil https://raw.githubusercontent.com/thomaslovell/LSIUtil/master/Binaries/LSIutil_1.70_release_binaries/linux/lsiutil.x86_64
+       chmod +x /tmp/lsiutil
+       ```
+    2. **Execution & Erase:** Ran `sudo /tmp/lsiutil` and selected the MPT Port. Selected **Option 4** (*Download/erase BIOS and/or FCode*). Pressed **Enter** on the filename prompt, and answered **No** to preserving the x86 BIOS and EFI BIOS images. Confirmed with **Yes** to execute the erase.
+    3. **Reset:** Selected **Option 99** to reset the port and quit the utility. Verified Option ROMs were wiped using `sudo sas2flash -list` (showing `BIOS Version: N/A` and `UEFI BSD Version: N/A`).
+
+### Issue 36: matrix iSCSI Boot Race Condition during Cold Boot
+* **Symptoms:** matrix (Mini-PC) boots significantly faster than skynet (ATX server backend) during a cold start, causing `open-iscsi` to exhaust its initial login retries too early, leading to ZFS/MergerFS mount failures.
+* **Diagnosis:** The default timeout of `open-iscsi` was too short to wait for the storage server backend to finish its POST and start the iSCSI portal.
+* **Fix Applied:** Increased the retry count in `/etc/iscsi/iscsid.conf` to extend the connection retry window during boot.
+* **Implementation:**
+    1. Edited `/etc/iscsi/iscsid.conf` on matrix.
+    2. Increased `node.session.initial_login_retry_max` to `120` (extending the retry window to ~10 minutes).
+    3. Restarted `iscsid` and verified the retry loop behavior during a cold boot test.
+
+### Issue 37: skynet 10G SFP+ Interface and Storage Network Binding
+* **Symptoms:** Storage replication and replication tasks between matrix and skynet suffered from performance drops and latency due to binding to the wrong physical port.
+* **Diagnosis:** The IPv6 static storage configuration (`fddd::/64` direct link) was bound to `nic1` on skynet instead of `nic2`, which is the physical 10G SFP+ port.
+* **Fix Applied:** Adjusted the network configuration of skynet to bind the `fddd::2/64` address to the correct physical adapter interface (`nic2`).
+* **Implementation:**
+    1. Modified `/etc/network/interfaces` on skynet.
+    2. Swapped the static IPv6 configurations between `nic1` and `nic2` to align with physical wiring.
+    3. Reloaded networking using `systemctl restart networking` and verified direct 10G link bandwidth using `iperf3`.
+
+### Issue 38: Jellyfin Media Player (Windows) Direct Play Buffering and Latency Starvation
+* **Symptoms:** High-bitrate 4K Direct Play micro-stutters and buffering in Jellyfin Media Player (Windows) on the control node.
+* **Diagnosis:** Latency starvation caused by MergerFS `dropcacheonclose=true` combined with `mpv`'s default tiny HTTP chunk requests.
+* **Fix Applied:** Configured aggressive local caching parameters inside the client's `mpv.conf` to buffer media files ahead of time.
+* **Implementation:**
+    1. Created `%LOCALAPPDATA%\JellyfinMediaPlayer\mpv.conf` on the Windows laptop.
+    2. Added the following caching parameters to force a 1GB RAM buffer:
+       ```ini
+       cache=yes
+       demuxer-max-bytes=1000MiB
+       demuxer-readahead-secs=120
+       ```
+
+### Issue 39: Proxmox Memory Units CLI & UI Input Workarounds
+* **Symptoms:** CLI friction due to Proxmox displaying and requiring memory inputs in MiB instead of GB.
+* **Diagnosis:** PVE does not natively support changing the memory display/input unit due to ExtJS UI and QEMU/kernel alignment requirements.
+* **Fix Applied:** Created a shell helper alias for CLI computations and a JavaScript bookmarklet for GUI input conversion.
+* **Implementation:**
+    1. **CLI Alias:** Added `alias mib='function _mib() { echo $(($1 * 1024)); }; _mib'` to shell profile.
+    2. **GUI Bookmarklet:** Created a bookmarklet that automatically reads the active memory input field, converts the GB value to MiB, and updates the ExtJS state dynamically.
+
+### Issue 40: NFS I/O Failures and Large File Transfer Crashes
+* **Symptoms:** Large file transfers (e.g. 80GB Remuxes) crashed or stalled over the NFS network mount.
+* **Diagnosis:** Network timeouts and packet loss under load caused the NFS mount to lock up due to standard soft mount timeouts.
+* **Fix Applied:** Transitioned matrix's NFS mount parameters to use hard mounts with customized timeouts.
+* **Implementation:**
+    1. Edited `/etc/fstab` on matrix.
+    2. Updated mount parameters to: `hard,timeo=600,retrans=5`.
+
+### Issue 41: Purifying Unprivileged Proxmox Containers (Permission Restoration)
+* **Symptoms:** Unprivileged containers (e.g. NZBGet) suffered from write failures and permission errors after removing custom `lxc.idmap` shifting.
+* **Diagnosis:** Existing files inside the container's rootfs were owned by the shifting UID `1000` instead of the base `100000` container namespace.
+* **Fix Applied:** Shifted container internal files back to the base namespace mapping from the host.
+* **Implementation:**
+    1. Obtained the container's PID from the host.
+    2. Ran: `find /proc/<PID>/root/ -xdev \( -uid 1000 -o -gid 1000 \) -exec chown -h 101000:101000 {} +` from the Proxmox host.
