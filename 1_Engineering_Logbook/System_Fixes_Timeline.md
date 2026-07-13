@@ -601,3 +601,15 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 * **Implementation:**
     1. Obtained the container's PID from the host.
     2. Ran: `find /proc/<PID>/root/ -xdev \( -uid 1000 -o -gid 1000 \) -exec chown -h 101000:101000 {} +` from the Proxmox host.
+
+### Issue 42: Terminal Keyboard Shortcuts and Escape Sequences Inconsistencies (CSI u Standard)
+* **Symptoms:** Mapped shortcut keys like `Ctrl+Backspace`, `Ctrl+Delete`, `Alt+Backspace`, and `Alt+Delete` behaved inconsistently. In container environments entered via `pct enter`, `Shift+PageUp/Down` printed raw `2~` sequences.
+* **Diagnosis:** Terminal emulators and shells had mismatching key translations. Specifically, `pct enter` overrides `TERM` to `linux`, forcing an obsolete console driver.
+* **Fix Applied:** Deployed the **CSI u** terminal protocol standard and shifted container access from `pct enter` to native `lxc-attach` to preserve terminal capabilities (`TERM=xterm-256color`).
+* **Implementation:**
+    1. **Configuration:** Created a unified, clean `/etc/inputrc` template incorporating standard key bindings and CSI u sequences.
+    2. **Distribution:** Overwrote `/etc/inputrc` on `matrix`, `skynet`, and all running LXC containers, creating backup `.orig` files.
+    3. **Container Access:** Deployed `alias enter='sudo lxc-attach -n'` to root and standard users (`AI`, `tuco`) on `matrix` host to preserve the terminal environment.
+    4. **Zsh Support:** Aligned the universal Zsh template in `04_Terminal_Environment_Setup.md` with matrix actuals (adding the `temps` alias, removing deprecated IP aliases) and deployed the updated `.zshrc` containing CSI u Zsh keybindings to root and `tuco` on both `matrix` and `skynet`.
+    5. **Documentation:** Documented full technical architecture in [08_CSIu_Terminal_Standardization.md](file:///root/portfolio/3_Engineering_and_Troubleshooting/08_CSIu_Terminal_Standardization.md).
+

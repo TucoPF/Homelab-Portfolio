@@ -14,7 +14,7 @@ This template is the "Source of Truth" for the entire homelab.
 
 ```zsh
 # Universal Zsh Configuration for Homelab
-# Optimized for matrix, skynet, Pi4 and Root accounts
+# Optimized for Matrix, Skynet, Pi4 and Root accounts
 
 # --- Basic & Navigation Aliases ---
 alias ls='ls --color=auto'
@@ -25,20 +25,18 @@ alias grep='grep --color=auto'
 alias mounts='cat /etc/fstab'
 
 # Handle both 'bat' (Arch) and 'batcat' (Debian)
-if command -v batcat >/dev/null 2>&1; then
-    alias cat='batcat --style=plain --paging=never'
-elif command -v bat >/dev/null 2>&1; then
-    alias cat='bat --style=plain --paging=never'
-fi
+alias cat='batcat --style=plain --paging=never'
 
 # --- System & Package Management ---
 alias update='sudo apt update && sudo apt upgrade'
 alias add='sudo apt install'
+alias added='apt-mark showmanual'
 alias remove='sudo apt remove'
+alias purge='sudo apt purge'
 alias clean='sudo apt autoremove'
 alias reboot='sudo reboot'
 alias shutdown='sudo shutdown now'
-alias added='apt-mark showmanual'
+alias temps='bash /home/tuco/scripts/check_skynet_temps.sh'
 
 # Search with fzf (if available)
 if command -v fzf >/dev/null 2>&1; then
@@ -47,34 +45,51 @@ fi
 
 # --- Proxmox & LXC Management ---
 alias pct='sudo pct'
-alias jellyfin='sudo pct enter 101'
-alias arr='sudo pct enter 103'
-alias nzb='sudo pct enter 102'
+alias enter='sudo lxc-attach -n'
+alias stop-quorum='pvecm expected 1'
 
-# --- Network & SSH (Wake-on-LAN) ---
-alias matrix='ssh matrix'
-alias skynet='ssh skynet'
-alias pi='ssh pi'
-alias wake-skynet='wakeonlan 34:5a:60:ba:86:5b'
+# --- Network & SSH ---
+alias wake-skynet='wakeonlan c4:62:37:09:8a:7f'
 alias wake-matrix='wakeonlan 58:47:ca:7a:84:cc'
+alias wake-pi='wakeonlan 2c:cf:67:59:5e:e3'
 
 # --- Keybindings ---
+# Esc+é to exit, Alt+x to clear
 bindkey -s '^[x' 'clear\n'
 bindkey -s '\eé' 'exit\n'
+
+# Use emacs keybindings by default
 bindkey -e
-bindkey "${terminfo[khome]}" beginning-of-line
-bindkey "${terminfo[kend]}"  end-of-line
-bindkey "${terminfo[kdch1]}" delete-char
+
+# [Home], [End], [Delete] and Arrows (Static Mode Normal)
+bindkey "^[[H" beginning-of-line      # Home
+bindkey "^[[F" end-of-line            # End
+bindkey "^[[3~" delete-char           # Delete
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
 bindkey '^H' backward-kill-word
 bindkey "^[[A" history-search-backward
 bindkey "^[[B" history-search-forward
 
+# Ctrl+Delete / Alt+Delete (Legacy fallbacks)
+bindkey "^[[3;5~" kill-word           # Ctrl + Delete
+bindkey "^[[3;3~" kill-word           # Alt + Delete
+
+# CSI u Raccourcis clavier (Ctrl / Alt + Mots)
+bindkey "\e[100;5u" backward-word       # Ctrl + Flèche Gauche
+bindkey "\e[99;5u"  forward-word        # Ctrl + Flèche Droite
+bindkey "\e[127;5u" backward-kill-word  # Ctrl + Backspace
+bindkey "\e[127;3u" backward-kill-word  # Alt + Backspace
+bindkey "\e[3;5u"   kill-word           # Ctrl + Delete
+bindkey "\e[3;3u"   kill-word           # Alt + Delete
+
 # --- Prompt Configuration ---
+# Use different colors for root vs. regular user
 if [ "$EUID" -ne 0 ]; then
+    # Regular user (Green user@host)
     PROMPT='%F{green}%n@%m%f:%F{blue}%~%f$ '
 else
+    # Root user (Red user@host)
     PROMPT='%F{red}%n@%m%f:%F{blue}%~%f# '
 fi
 
@@ -92,6 +107,7 @@ setopt incappendhistory
 setopt histignoredups
 
 # --- Plugins ---
+# Check common paths for Debian/Ubuntu and Arch
 for plugin in \
     "/usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" \
     "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" \
