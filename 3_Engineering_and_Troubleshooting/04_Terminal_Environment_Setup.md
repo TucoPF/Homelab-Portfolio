@@ -54,8 +54,8 @@ alias wake-matrix='wakeonlan 58:47:ca:7a:84:cc'
 alias wake-pi='wakeonlan 2c:cf:67:59:5e:e3'
 
 # --- Keybindings ---
-# Esc+é to exit, Alt+x to clear
-bindkey -s '^[x' 'clear\n'
+# Esc+é to exit, Alt+< to clear
+bindkey -s '^[<' 'clear\n'
 bindkey -s '\eé' 'exit\n'
 
 # Use emacs keybindings by default
