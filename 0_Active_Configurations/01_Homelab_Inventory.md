@@ -47,7 +47,7 @@
   - **Motherboard:** MSI MAG X870E TOMAHAWK WIFI (MS-7E59)
   - **CPU:** AMD Ryzen 7 9700X (8 Cores / 16 Threads, SMT Enabled, Socket AM5)
   - **RAM:** 32 GiB DDR5
-  - **HBA Controller:** Broadcom / LSI SAS2308 PCI-Express Fusion-MPT SAS-2 (IT Mode)
+  - **HBA Controller:** Broadcom / LSI SAS2308 PCI-Express Fusion-MPT SAS-2 (IT Mode, in slot PCIe_E3 via 30cm extension)
   - **Chassis/Enclosure:** Jonsbo N5 NAS/Storage Chassis (Integrated Hot-Swap Backplane)
   - **Storage:** 
     - 1 TB NVMe (PVE OS & Datastore, LVM-Thin `local`/`local-lvm` on `nvme0n1` [Samsung 980 Pro])
@@ -57,7 +57,7 @@
   - **Network Controller:**
     - `nic0`: Onboard Realtek RTL8126 5GbE Controller (MAC: `34:5a:60:ba:86:5b`, PVE Bridge `vmbr0`)
     - `nic1`: Down/Available
-    - `nic2`: 10G 10Gtek PCIe Card (Direct-attach 10G SFP+ storage link to matrix, IP: `fddd::2/64`)
+    - `nic2`: Intel X520-1 10G SFP+ NIC (connected to M.2_4 slot, direct-attach 10G SFP+ storage link to matrix, MAC: `c4:62:37:0a:d6:42`, IP: `fddd::2/64`)
     - Qualcomm WCN785x Wi-Fi 7 Controller (`wlp7s0`, disabled)
 - **Services (SAN):**
   - **iSCSI LIO Target (`targetcli`):** `iqn.2024-01.local.homelab:skynet-target` exporting `sda` and `sdd` LUNs over 10G portal `[fddd::2]:3260`.
