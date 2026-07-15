@@ -624,4 +624,30 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
     4. **Debian Template:** Attempted to modify the stopped base template `CT 100`, but its disk filesystem (`pve-base--100--disk--0`) is configured as a read-only Proxmox template base volume and is immutable.
     5. **Documentation:** Appended notes in [08_CSIu_Terminal_Standardization.md](file:///root/portfolio/3_Engineering_and_Troubleshooting/08_CSIu_Terminal_Standardization.md).
 
+## Date: 15 July 2026
+
+### Issue 44: IPv6 NDP Discovery Failure and Internet Cut with Proxmox Firewall
+* **Symptoms:** 
+  1. IPv6 ping from the Pi 4 (Wi-Fi) to Matrix containers/VMs (e.g. `AI-1111`) returned `Destination unreachable: Address unreachable`.
+  2. Activating multicast snooping on `vmbr0` completely cut off IPv6 internet access and local routing for all containers.
+* **Diagnosis:** 
+  1. The Proxmox firewall (`firewall=1` on the vNIC) inserts intermediate virtual bridges (`fwbr*`) between the containers and `vmbr0`. By default, these bridges have `multicast_snooping=1` but no querier. Because the default Proxmox firewall ruleset blocks outgoing MLD reports and incoming MLD queries (due to dropping all multicast `ff00::/8` and lack of explicit rules for MLD), the bridges could not populate their multicast database (MDB) tables. This broke NDP (MAC resolution) for all firewalled containers, resulting in `Address unreachable`.
+  2. The Freebox Pop (ISP router) does not act as an MLD querier and does not respond to MLD queries. Therefore, `vmbr0` (with snooping=1 and querier=1) never registered the physical gateway port `nic0` as a multicast router, dropping all outgoing NDP solicitations destined for the gateway.
+* **Fix Applied:** 
+  1. Added explicit `icmpv6` firewall rules to allow infrastructure local multicast and link-local discovery (MLD/NDP) through the Proxmox firewall, making snooping work natively without workarounds.
+  2. Forced `mcast_router 2` (always forward multicast) on the physical bridge port `nic0` of both Matrix and Skynet.
+  3. Configured `multicast_querier 1` (MLD querier) on the `vmbr0` bridge of both nodes for redundancy.
+* **Implementation:**
+  1. **Firewall Rules (GUI):** Created the following rules in the container firewall settings (or `ipv6-infra` group):
+     * `IN ACCEPT` - Protocol: `icmp6` - Source: `fe80::/10` *(Allows host NDP/MLD Queries)*
+     * `IN ACCEPT` - Protocol: `icmp6` - Source: `lan6` *(Allows local clients ping)*
+     * `OUT ACCEPT` - Protocol: `icmp6` *(Allows outgoing MLD Reports/NDP)*
+  2. **Matrix Networking:** Appended the following lines to `iface vmbr0 inet6 manual` in `/etc/network/interfaces`:
+     ```text
+             post-up ip link set dev nic0 type bridge_slave mcast_router 2
+             post-up echo 1 > /sys/class/net/vmbr0/bridge/multicast_querier
+     ```
+     Applied immediately: `sudo ip link set dev nic0 type bridge_slave mcast_router 2 && echo 1 | sudo tee /sys/class/net/vmbr0/bridge/multicast_querier && echo 1 | sudo tee /sys/class/net/vmbr0/bridge/multicast_snooping`.
+  3. **Skynet Networking:** Applied identical commands and persistent lines to `/etc/network/interfaces` on Skynet.
+
 

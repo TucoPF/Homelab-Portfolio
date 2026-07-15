@@ -13,6 +13,7 @@
 *   **Documentation Integrity**: Maintain absolute accuracy in portfolio markdown files.
 *   **Preferred Remote Editing**: Use inline Python 3 commands (e.g. `python3 -c "..."`) over SSH for remote file edits.
 *   **Documentation Decision Prompting**: For any edits in the `portfolio` folder, you MUST explicitly ask the user whether to document the information in `AGENTS.md` or in the other documentation files.
+*   **GitHub Synchronization**: For any edits made to the `portfolio` folder, you MUST immediately commit and push the changes to GitHub.
 
 
 ## 🔐 3. AUTHORIZATION & EXECUTION CONTEXT
