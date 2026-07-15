@@ -108,10 +108,6 @@ Since Zsh uses ZLE (Zsh Line Editor) instead of GNU Readline, `/etc/inputrc` is 
 
 The following keybindings were configured:
 ```zsh
-# Esc+é to exit, Alt+< to clear (Normal Mode)
-bindkey -s '^[<' 'clear\n'
-bindkey -s '\eé' 'exit\n'
-
 # [Home], [End], [Delete] and Arrows (Static Mode Normal)
 # Application Mode (smkx/rmkx) was removed to prevent blocking terminal viewport scrolling.
 bindkey "^[[H" beginning-of-line      # Home
@@ -129,13 +125,6 @@ bindkey "\e[127;5u" backward-kill-word  # Ctrl + Backspace
 bindkey "\e[127;3u" backward-kill-word  # Alt + Backspace
 bindkey "\e[3;5u"   kill-word           # Ctrl + Delete
 bindkey "\e[3;3u"   kill-word           # Alt + Delete
-```
-
-### Bash Keybindings (LXC Containers)
-For the LXC containers running Bash, the `Alt+<` keybinding for clearing the screen is bound directly in `/root/.bashrc` and `/home/tuco/.bashrc` using:
-```bash
-bind '"\e<":"clear\n"'
-bind '"\eé": "exit\n"'
 ```
 
 ---
