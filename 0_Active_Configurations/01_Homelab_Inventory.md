@@ -76,7 +76,7 @@
 - **Hardware:**
   - **Model:** Raspberry Pi 4 Model B Rev 1.5 (Cortex-A72, 4 cores)
   - **RAM:** 7.6 GiB
-  - **Storage:** 238.5G SSD (sda)
+  - **Storage:** 128G MicroSD (Samsung Pro Ultimate A2 V30)
 - **Active Services:**
   - **AdGuard Home:** Redundant DNS filtering replica (`/opt/AdGuardHome`, port 53/80).
   - **adguardhome-sync:** Sync daemon (`/usr/local/bin/adguardhome-sync`) syncing configurations, custom rewrites, and blocklists from CT115 (matrix) every minute.
