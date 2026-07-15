@@ -650,4 +650,14 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      Applied immediately: `sudo ip link set dev nic0 type bridge_slave mcast_router 2 && echo 1 | sudo tee /sys/class/net/vmbr0/bridge/multicast_querier && echo 1 | sudo tee /sys/class/net/vmbr0/bridge/multicast_snooping`.
   3. **Skynet Networking:** Applied identical commands and persistent lines to `/etc/network/interfaces` on Skynet.
 
-
+### Issue 45: Traefik Zombie Connections & Lack of Active Backend Health Checks
+* **Symptoms:** After resolving the IPv6 NDP discovery block (Issue 44), Traefik (LXC 112) and Authelia (LXC 113) still returned `502/504 Bad Gateway` or `no available server` errors when trying to reach backends like Radarr or Seerr. Even after the firewall rules were corrected, Traefik required a manual restart to reconnect to the services.
+* **Diagnosis:**
+  1. **Zombie TCP Keep-Alives:** When the Proxmox firewall silently dropped NDP packets, Traefik's persistent TCP connections were broken without a `FIN` or `RST` signal. Traefik waited on dead sockets until the Linux kernel's default 15-minute TCP timeout expired.
+  2. **Passive Routing:** Traefik was configured with default transport parameters. It did not actively ping its backends, so it could not autonomously detect when a backend became unreachable or when it recovered.
+* **Fix Applied:**
+  1. **Aggressive Transport Timeouts:** Configured a global `serversTransport` in `traefik.yaml` (`dialTimeout: 2s`, `idleConnTimeout: 30s`) so Traefik immediately destroys zombie connections upon silent network drops.
+  2. **Active Dynamic HealthChecks:** Injected `healthCheck` blocks into all dynamic routing configurations (`conf.d/*.yaml`) with application-specific ping endpoints (e.g., `/api/health` for Authelia, `/ping` for Radarr/Sonarr, `/health` for Jellyfin, `/` for Seerr).
+* **Implementation:**
+  1. **Global Timeout Config:** Appended `serversTransport` to `/etc/traefik/traefik.yaml` on LXC 112 and restarted the `traefik` service to apply the static configuration.
+  2. **Dynamic HealthCheck Injection:** Ran a Python script on the hypervisor to parse and append the `healthCheck` block into the `loadBalancer` section of every service's YAML file. Traefik's file watcher reloaded these dynamic rules instantly without downtime, making the proxy auto-healing.
