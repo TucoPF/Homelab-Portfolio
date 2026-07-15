@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio & Référentiel Compétences — Technicien IT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-area">
+                    <span class="badge">Apprenti Technicien IT</span>
+                    <h1>Portfolio de Compétences</h1>
+                    <p class="subtitle">Administration Systèmes, Réseaux, Sécurité & Stockage</p>
+                </div>
+                <div class="contact-links">
+                    <a href="https://github.com/TucoPF" target="_blank" class="btn btn-secondary">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+                        GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="filters-section">
+            <div class="filter-label">Filtrer par domaine :</div>
+            <div class="filter-tabs">
+                <button class="tab-btn active" data-filter="all">Tous les rôles</button>
+                <button class="tab-btn" data-filter="system">Systèmes & Virtualisation</button>
+                <button class="tab-btn" data-filter="network">Réseaux & Sécurité</button>
+                <button class="tab-btn" data-filter="storage">Stockage & SAN/NAS</button>
+                <button class="tab-btn" data-filter="pentest">Pentest & Audits</button>
+                <button class="tab-btn" data-filter="support">Support & Maintenance</button>
+            </div>
+        </section>
+
+        <section class="roles-grid" id="roles-container">
+            <!-- ROLE 1: SYSTEM -->
+            <article class="role-card" data-category="system">
+                <div class="role-header">
+                    <div class="role-icon-box system-color">
+                        <svg class="role-icon" viewBox="0 0 24 24"><path d="M4 6H2v14a2 2 0 0 0 2 2h14v-2H4zm16-4H8a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 14H8V4h12z"/></svg>
+                    </div>
+                    <div>
+                        <span class="role-tag system-color">Systèmes</span>
+                        <h2>Administrateur Systèmes & Hyperviseurs</h2>
+                    </div>
+                </div>
+                
+                <div class="role-body">
+                    <h3>🛠️ Compétences acquises</h3>
+                    <ul class="skills-list">
+                        <li><strong>Proxmox VE 9 :</strong> Gestion de nœuds de calcul, de clusters et du quorum en environnement distribué.</li>
+                        <li><strong>Virtualisation GPU (SR-IOV) :</strong> Découpage matériel d'iGPU Intel Iris Xe avec persistance DKMS lors des mises à jour système.</li>
+                        <li><strong>Conteneurs LXC :</strong> Sécurisation, montage bind mounts (`noatime,backup=0`), isolation et ID Mapping personnalisés.</li>
+                        <li><strong>Active Directory (ADDS) :</strong> Gestion complète sous Windows Server, stratégies GPO, serveurs d'impression et RRAS/NAT.</li>
+                        <li><strong>Automatisation Shell :</strong> Scripts d'orchestration pour la mise à jour centralisée des conteneurs et des piles Docker.</li>
+                    </ul>
+
+                    <div class="context-box">
+                        <strong>Contexte :</strong> Projets d'automatisation multimédia (Arr-Stack, Jellyfin avec transcoding matériel) et simulation complète AD en réseau d'entreprise isolé.
+                    </div>
+
+                    <div class="troubleshooting-accordion">
+                        <button class="accordion-trigger">
+                            <span>🔍 Cas pratique : Boucle de boot infinie du cluster</span>
+                            <span class="arrow"></span>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="incident-meta"><strong>Symptôme :</strong> Gel total du stockage Proxmox (`/etc/pve`) et échec réseau au boot à froid.</div>
+                            <div class="incident-desc"><strong>Analyse :</strong> Interverrouillage systemd où `zfs-import-cache` attendait `open-iscsi` qui dépendait de la couche réseau, elle-même bloquée par l'initialisation des disques virtuels de l'hyperviseur.</div>
+                            <div class="incident-solution"><strong>Résolution :</strong> Suppression de la dépendance forcée au démarrage et refactorisation de `/etc/fstab` avec les options `_netdev,nofail,x-systemd.after` pour forcer un montage dynamique et propre après le réseau.</div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ROLE 2: NETWORK -->
+            <article class="role-card" data-category="network">
+                <div class="role-header">
+                    <div class="role-icon-box network-color">
+                        <svg class="role-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.53c-.26-.81-1-1.4-1.9-1.4h-1v-3c0-.55-.45-1-1-1h-6v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.4z"/></svg>
+                    </div>
+                    <div>
+                        <span class="role-tag network-color">Réseaux & Sécurité</span>
+                        <h2>Administrateur Réseaux & Sécurité</h2>
+                    </div>
+                </div>
+                
+                <div class="role-body">
+                    <h3>🛠️ Compétences acquises</h3>
+                    <ul class="skills-list">
+                        <li><strong>Adressage IPv6 Dual-Stack :</strong> Délégation de préfixe FAI, intégration d'adresses ULA (`fddf::/64`) et lien-local.</li>
+                        <li><strong>VPN WireGuard :</strong> Routage de tunnels chiffrés sous environnement IPv6 maillé pour l'accès aux réseaux internes.</li>
+                        <li><strong>Traefik & SSL/TLS :</strong> Configuration de certificats Let's Encrypt par challenge DNS Cloudflare et durcissement HTTPS (HSTS, TLS 1.2/1.3).</li>
+                        <li><strong>Pare-feu & IPS :</strong> Gestion de firewalld/nftables et interconnexion de CrowdSec LAPI avec bouncers au niveau noyau sur l'hôte PVE.</li>
+                        <li><strong>Sécurisation applicative :</strong> Mise en œuvre de reverse proxying avec SSO Authelia (WebAuthn/Passkeys) et Geoblocking par base IP2Location.</li>
+                    </ul>
+
+                    <div class="context-box">
+                        <strong>Contexte :</strong> Sécurisation réseau zero-trust de l'infrastructure homelab et routage inter-sous-réseau sécurisé pour une découpeuse laser industrielle.
+                    </div>
+
+                    <div class="troubleshooting-accordion">
+                        <button class="accordion-trigger">
+                            <span>🔍 Cas pratique : NDP/MLD brisé sous pare-feu Proxmox</span>
+                            <span class="arrow"></span>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="incident-meta"><strong>Symptôme :</strong> Perte de connectivité IPv6 locale entre les machines et conteneurs virtuels (erreur NDP d'adresse injoignable).</div>
+                            <div class="incident-desc"><strong>Analyse :</strong> Le pare-feu Proxmox bloquait par défaut le trafic de découverte multicast (MLD) requis pour l'association MAC/IP en IPv6 avec le snooping du routeur FAI.</div>
+                            <div class="incident-solution"><strong>Résolution :</strong> Autorisation explicite d'ICMPv6 (groupes `fe80::/10` et `lan6`), configuration de `mcast_router 2` sur la carte réseau de l'hôte et de `multicast_querier 1` sur le pont `vmbr0`.</div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ROLE 3: STORAGE -->
+            <article class="role-card" data-category="storage">
+                <div class="role-header">
+                    <div class="role-icon-box storage-color">
+                        <svg class="role-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 16h-2v-6h2v6zm4 0h-2v-8h2v8zm-8 0H5v-4h2v4z"/></svg>
+                    </div>
+                    <div>
+                        <span class="role-tag storage-color">Stockage</span>
+                        <h2>Ingénieur Stockage & SAN/NAS</h2>
+                    </div>
+                </div>
+                
+                <div class="role-body">
+                    <h3>🛠️ Compétences acquises</h3>
+                    <ul class="skills-list">
+                        <li><strong>SAN iSCSI :</strong> Configuration de volumes blocs distants via LIO target (`targetcli`) sur lien dédié 10G SFP+.</li>
+                        <li><strong>ZFS & NFS :</strong> Pools ZFS locaux en miroir, exports de datasets NFS v4.2 avec gestion fine des UIDs/GIDs (`no_root_squash`).</li>
+                        <li><strong>MergerFS (Tiered Storage) :</strong> Pooling hybride dynamique agrégeant disques SAS lents et caches rapides NVMe locaux.</li>
+                        <li><strong>Optimisation Flash :</strong> Mise en œuvre de TRIM ciblé et asservi à l'exécution de scripts de déplacement (`fusion_mover.sh`).</li>
+                        <li><strong>Ajustement Système :</strong> Récupération de ~550 Go d'espace utile par réduction du ratio de blocs EXT4 de 5% à 1% (`tune2fs`).</li>
+                    </ul>
+
+                    <div class="context-box">
+                        <strong>Contexte :</strong> Administration de la grappe de stockage de 35 To "Fusion" et migration de nœuds de stockage de Proxmox Backup Server vers PVE natif.
+                    </div>
+
+                    <div class="troubleshooting-accordion">
+                        <button class="accordion-trigger">
+                            <span>🔍 Cas pratique : Calibrations et cliquetis disques SAS</span>
+                            <span class="arrow"></span>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="incident-meta"><strong>Symptôme :</strong> Cliquetis cycliques bruyants sur disques durs Seagate Exos SAS en période d'inactivité.</div>
+                            <div class="incident-desc"><strong>Analyse :</strong> Le micrologiciel du disque effectuait des balayages thermiques de calibrage (TFC) sur des secteurs réalloués à la sortie du mode veille profond. Le paramétrage de gestion d'énergie (EPC) était désynchronisé.</div>
+                            <div class="incident-solution"><strong>Résolution :</strong> Alignement des paramètres de veille EPC (`Idle_A`, `Idle_B`) par `sdparm` et développement d'un service systemd au boot forçant la veille prolongée propre pour stopper l'usure moteur.</div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ROLE 4: PENTEST -->
+            <article class="role-card" data-category="pentest">
+                <div class="role-header">
+                    <div class="role-icon-box pentest-color">
+                        <svg class="role-icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                    </div>
+                    <div>
+                        <span class="role-tag pentest-color">Sécurité Offensive</span>
+                        <h2>Analyste en Pentesting & Audits</h2>
+                    </div>
+                </div>
+                
+                <div class="role-body">
+                    <h3>🛠️ Compétences acquises</h3>
+                    <ul class="skills-list">
+                        <li><strong>Audits de Sécurité Externes :</strong> Déploiement temporaire et sécurisé de serveurs VPS (Hetzner Cloud) pour simuler des attaques WAN.</li>
+                        <li><strong>Reconnaissance de Services :</strong> Port-scanning à haute vitesse avec Rustscan et détection d'empreintes applicatives avec Nmap.</li>
+                        <li><strong>Scan de Vulnérabilités :</strong> Templating d'attaques automatisées via Nuclei (recherche de CVEs, ciphers SSL obsolètes et fuites d'infos).</li>
+                        <li><strong>Validation d'Ingress :</strong> Simulation d'abus d'en-têtes HTTP (Host Headers / SNI spoofing) pour tester le filtrage du Reverse Proxy.</li>
+                    </ul>
+
+                    <div class="context-box">
+                        <strong>Contexte :</strong> Validation de la sécurité périmétrique IPv6 du Homelab et audits de conformité de reverse proxy.
+                    </div>
+
+                    <div class="troubleshooting-accordion">
+                        <button class="accordion-trigger">
+                            <span>🔍 Cas pratique : Validation de la chaîne de blocage IPS</span>
+                            <span class="arrow"></span>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="incident-meta"><strong>Symptôme :</strong> Besoin de certifier que CrowdSec et le pare-feu Proxmox coopèrent pour bannir une source offensive externe.</div>
+                            <div class="incident-desc"><strong>Analyse :</strong> Lancement d'un scan agressif simulé depuis le VPS externe cible. Le proxy a intercepté les requêtes malveillantes et a envoyé l'alerte à la base LAPI.</div>
+                            <div class="incident-solution"><strong>Résolution :</strong> L'IP offensive a bien été bannie automatiquement au niveau du noyau de l'hyperviseur Proxmox (vérification de la table ipset `crowdsec-bans`), interrompant le scan instantanément à la source.</div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ROLE 5: SUPPORT -->
+            <article class="role-card" data-category="support">
+                <div class="role-header">
+                    <div class="role-icon-box support-color">
+                        <svg class="role-icon" viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.3C.5 6.7.9 9.8 2.9 11.8c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.1z"/></svg>
+                    </div>
+                    <div>
+                        <span class="role-tag support-color">Support & Maintenance</span>
+                        <h2>Support & Outillage Matériel</h2>
+                    </div>
+                </div>
+                
+                <div class="role-body">
+                    <h3>🛠️ Compétences acquises</h3>
+                    <ul class="skills-list">
+                        <li><strong>Flashage Firmware Négocié :</strong> Extraction de microgiciels propriétaires (Samsung Magician ISO) et flashage CLI via `nvme-cli`.</li>
+                        <li><strong>Déploiement WDS / PXE :</strong> Injection automatisée de pilotes tiers VirtIO (NetKVM, vioscsi) dans des boot images Windows PE.</li>
+                        <li><strong>Administration Clavier & MCU :</strong> Modification et persistance de configuration de microcontrôleur de périphériques (EEPROM) sous protocole WebHID.</li>
+                        <li><strong>Dépannage Matériel Hardware :</strong> Diagnostic et isolation acoustique de châssis, suivi SMART des secteurs de disques.</li>
+                    </ul>
+
+                    <div class="context-box">
+                        <strong>Contexte :</strong> Support utilisateur entreprise (simulation), administration de parcs de serveurs de fichiers et maintenance hardware Homelab.
+                    </div>
+
+                    <div class="troubleshooting-accordion">
+                        <button class="accordion-trigger">
+                            <span>🔍 Cas pratique : Blocage de boot UEFI LSI HBA</span>
+                            <span class="arrow"></span>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="incident-meta"><strong>Symptôme :</strong> Gel complet du POST de la carte mère (code debug 73/92) ou latence de boot de 2m30s causé par la carte HBA LSI SAS2308.</div>
+                            <div class="incident-desc"><strong>Analyse :</strong> L'Option ROM de la carte HBA (conçue pour les anciens BIOS) entrait en conflit avec l'UEFI AM5 moderne. L'outil standard `sas2flash` était inutilisable en raison des sécurités de verrouillage noyau.</div>
+                            <div class="incident-solution"><strong>Résolution :</strong> Lancement de l'outil interactif bas niveau `lsiutil` sous Proxmox pour effacer sélectivement l'Option ROM obsolète sans toucher au firmware IT-mode actif, restaurant un boot instantané.</div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 — Technicien IT Portfolio. Compétences validées et éprouvées sur le terrain.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

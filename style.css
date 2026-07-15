@@ -1,0 +1,445 @@
+/* =========================================================================
+   STYLE SYSTEM — PORTFOLIO TECHNICIEN IT (GLASSMORPHISM & DARK MODE)
+   ========================================================================= */
+
+:root {
+    --bg-color: #0b0f19;
+    --card-bg: rgba(17, 24, 39, 0.7);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    
+    /* Category Accent Colors */
+    --color-system: #3b82f6;      /* Blue */
+    --color-network: #10b981;     /* Emerald */
+    --color-storage: #f59e0b;     /* Amber */
+    --color-pentest: #8b5cf6;     /* Purple */
+    --color-support: #ec4899;     /* Pink */
+
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* =========================================================================
+   BASE SETUP
+   ========================================================================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* Ambient glow background */
+.glow-bg {
+    position: fixed;
+    top: -10%;
+    left: 20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 50%, rgba(0,0,0,0) 100%);
+    z-index: -1;
+    pointer-events: none;
+    filter: blur(80px);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* =========================================================================
+   HEADER & INTRO
+   ========================================================================= */
+.header {
+    padding: 4rem 0 2rem 0;
+    border-bottom: 1px solid var(--card-border);
+    background: linear-gradient(to bottom, rgba(11, 15, 25, 0.9) 0%, rgba(11, 15, 25, 0) 100%);
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+@media(min-width: 768px) {
+    .header-content {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #60a5fa;
+    margin-bottom: 0.75rem;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    background: linear-gradient(to right, #ffffff, #9ca3af);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    margin-top: 0.25rem;
+}
+
+.contact-links {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: var(--transition-smooth);
+}
+
+.btn-secondary {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.icon {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+/* =========================================================================
+   FILTERS SECTION
+   ========================================================================= */
+.filters-section {
+    margin: 2.5rem 0 2rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media(min-width: 768px) {
+    .filters-section {
+        flex-direction: row;
+        align-items: center;
+        gap: 1.5rem;
+    }
+}
+
+.filter-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.filter-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tab-btn {
+    background-color: transparent;
+    border: 1px solid var(--card-border);
+    color: var(--text-secondary);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.tab-btn:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #60a5fa;
+}
+
+/* =========================================================================
+   ROLES GRID & CARDS
+   ========================================================================= */
+.roles-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+@media(min-width: 992px) {
+    .roles-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.role-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 2rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: var(--transition-smooth);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.role-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background-color: var(--accent-color, var(--color-system));
+    opacity: 0.8;
+}
+
+.role-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* Set dynamic category borders/accents */
+.role-card[data-category="system"] { --accent-color: var(--color-system); }
+.role-card[data-category="network"] { --accent-color: var(--color-network); }
+.role-card[data-category="storage"] { --accent-color: var(--color-storage); }
+.role-card[data-category="pentest"] { --accent-color: var(--color-pentest); }
+.role-card[data-category="support"] { --accent-color: var(--color-support); }
+
+.role-header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.role-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.role-icon {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+.system-color { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.network-color { background-color: rgba(16, 185, 129, 0.15); color: #34d399; }
+.storage-color { background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.pentest-color { background-color: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+.support-color { background-color: rgba(236, 72, 153, 0.15); color: #f472b6; }
+
+.role-tag {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 4px;
+    margin-bottom: 0.25rem;
+}
+
+.role-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Card Body Content */
+.role-body h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.skills-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    margin-bottom: 1.5rem;
+}
+
+.skills-list li {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    position: relative;
+    padding-left: 1.25rem;
+}
+
+.skills-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+.skills-list li strong {
+    color: var(--text-primary);
+}
+
+.context-box {
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    padding: 0.875rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.context-box strong {
+    color: var(--accent-color);
+}
+
+/* =========================================================================
+   ACCORDIONS (TROUBLESHOOTING CASE STUDIES)
+   ========================================================================= */
+.troubleshooting-accordion {
+    margin-top: auto;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.accordion-trigger {
+    width: 100%;
+    background-color: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    text-align: left;
+    transition: var(--transition-smooth);
+}
+
+.accordion-trigger:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.accordion-trigger .arrow {
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid var(--text-secondary);
+    border-bottom: 2px solid var(--text-secondary);
+    transform: rotate(45deg);
+    transition: var(--transition-smooth);
+    margin-right: 0.25rem;
+}
+
+.troubleshooting-accordion.open .accordion-trigger .arrow {
+    transform: rotate(-135deg);
+}
+
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    border-top: 1px solid transparent;
+}
+
+.troubleshooting-accordion.open .accordion-content {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+}
+
+.incident-meta {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.incident-desc {
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.incident-solution {
+    background-color: rgba(16, 185, 129, 0.05);
+    border-left: 3px solid var(--color-network);
+    padding: 0.75rem;
+    border-radius: 0 6px 6px 0;
+    color: #a7f3d0;
+}
+
+/* =========================================================================
+   FOOTER
+   ========================================================================= */
+.footer {
+    border-top: 1px solid var(--card-border);
+    padding: 2.5rem 0;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    background-color: rgba(11, 15, 25, 0.8);
+}
+
+/* Card dynamic hide/show classes */
+.role-card.hide {
+    display: none;
+}
