@@ -102,7 +102,7 @@ This alias is configured in:
 *   `/home/tuco/.bashrc` (user `tuco`)
 
 ### Zsh Keybindings (`matrix` & `skynet`)
-Since Zsh uses ZLE (Zsh Line Editor) instead of GNU Readline, `/etc/inputrc` is bypassed. The standardized CSI u bindings are injected into the universal Zsh template in `/root/portfolio/3_Engineering_and_Troubleshooting/04_Terminal_Environment_Setup.md` and deployed to the following files:
+Since Zsh uses ZLE (Zsh Line Editor) instead of GNU Readline, `/etc/inputrc` is bypassed. The standardized CSI u bindings are injected into the universal Zsh template in `/root/portfolio/3_Engineering_and_Troubleshooting/03_Terminal_Environment_Setup.md` and deployed to the following files:
 *   **matrix**: `/root/.zshrc` and `/home/tuco/.zshrc`
 *   **skynet**: `/root/.zshrc` and `/home/tuco/.zshrc`
 

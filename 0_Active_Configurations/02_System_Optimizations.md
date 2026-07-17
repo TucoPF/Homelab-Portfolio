@@ -19,7 +19,7 @@
 ## 🏗️ Virtualization & Permissions (Proxmox)
 - **LXC ID Mapping:** Unprivileged containers are mapped to host UID/GID 1000 for seamless storage access (Jellyfin/Arr-stack).
 - **GPU Passthrough:** iGPU Intel passed through to LXC 101 (Jellyfin) for hardware acceleration.
-- **iGPU SR-IOV Split:** The Intel UHD/Iris Xe graphics is split into 4 Virtual Functions (VFs) to provide dedicated PCIe graphics to VMs 201–203. See [07_Intel_iGPU_SRIOV_Setup.md](file:///root/portfolio/3_Engineering_and_Troubleshooting/07_Intel_iGPU_SRIOV_Setup.md) for details on configuration and update survival.
+- **iGPU SR-IOV Split:** The Intel UHD/Iris Xe graphics is split into 4 Virtual Functions (VFs) to provide dedicated PCIe graphics to VMs 201–203. See [06_Intel_iGPU_SRIOV_Setup.md](file:///root/portfolio/3_Engineering_and_Troubleshooting/06_Intel_iGPU_SRIOV_Setup.md) for details on configuration and update survival.
 - **matrix Network Isolation:** `vmbr0` moved to `nic0` to avoid network loops with Intel vPro/AMT management on `nic1`.
 
 ## 🎛️ matrix Compute Node Performance (i9-13900H)

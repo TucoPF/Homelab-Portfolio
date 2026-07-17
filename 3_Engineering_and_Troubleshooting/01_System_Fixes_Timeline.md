@@ -610,19 +610,19 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
     1. **Configuration:** Created a unified, clean `/etc/inputrc` template incorporating standard key bindings and CSI u sequences.
     2. **Distribution:** Overwrote `/etc/inputrc` on `matrix`, `skynet`, and all running LXC containers, creating backup `.orig` files.
     3. **Container Access:** Deployed `alias enter='sudo lxc-attach -n'` to root and standard users (`AI`, `tuco`) on `matrix` host to preserve the terminal environment.
-    4. **Zsh Support:** Aligned the universal Zsh template in `04_Terminal_Environment_Setup.md` with matrix actuals (adding the `temps` alias, removing deprecated IP aliases) and deployed the updated `.zshrc` containing CSI u Zsh keybindings to root and `tuco` on both `matrix` and `skynet`.
-    5. **Documentation:** Documented full technical architecture in [08_CSIu_Terminal_Standardization.md](file:///root/portfolio/3_Engineering_and_Troubleshooting/08_CSIu_Terminal_Standardization.md).
+    4. **Zsh Support:** Aligned the universal Zsh template in `03_Terminal_Environment_Setup.md` with matrix actuals (adding the `temps` alias, removing deprecated IP aliases) and deployed the updated `.zshrc` containing CSI u Zsh keybindings to root and `tuco` on both `matrix` and `skynet`.
+    5. **Documentation:** Documented full technical architecture in [07_CSIu_Terminal_Standardization.md](file:///root/portfolio/3_Engineering_and_Troubleshooting/07_CSIu_Terminal_Standardization.md).
 
 ### Issue 43: Zsh Keypad Application Mode Scroll Lock & Clear Keybinding Optimization
 *   **Symptoms:** `Shift+PageUp/Down` scrollback buffer navigation printed raw `;2~` sequences in Zsh instead of scrolling. The `clear` screen keybinding (`Alt+x`) was ergonomically suboptimal.
 *   **Diagnosis:** Zsh's keypad application mode hooks (`smkx` / `rmkx`) intercept navigation keys and forward them to ZLE instead of allowing the local terminal emulator to scroll.
 *   **Fix Applied:** Disabled Zsh keypad application mode by removing `smkx` / `rmkx` hooks and switching to static keyboard mappings (`Home`/`End`/`Delete`). Updated the `clear` screen keybinding from `Alt+x` to `Alt+<` and deployed it across hosts (Zsh) and containers (Bash).
 *   **Implementation:**
-    1. **Template Setup:** Modified the universal Zsh template in [04_Terminal_Environment_Setup.md](file:///root/portfolio/3_Engineering_and_Troubleshooting/04_Terminal_Environment_Setup.md) to bind `Home` -> `^[[H`, `End` -> `^[[F`, `Delete` -> `^[[3~`, and `clear` -> `^[<`.
+    1. **Template Setup:** Modified the universal Zsh template in [03_Terminal_Environment_Setup.md](file:///root/portfolio/3_Engineering_and_Troubleshooting/03_Terminal_Environment_Setup.md) to bind `Home` -> `^[[H`, `End` -> `^[[F`, `Delete` -> `^[[3~`, and `clear` -> `^[<`.
     2. **Host Distribution:** Deployed the new `.zshrc` to `root` and `tuco` on `matrix` and `skynet` hosts.
     3. **Container Distribution:** Created and executed a deployment script that pulled the `.bashrc` files from all active LXC containers, replaced `bind '"\ex":"clear\n"'` with `bind '"\e<":"clear\n"'` using a Python string-matching helper, and pushed the updated files back.
     4. **Debian Template:** Attempted to modify the stopped base template `CT 100`, but its disk filesystem (`pve-base--100--disk--0`) is configured as a read-only Proxmox template base volume and is immutable.
-    5. **Documentation:** Appended notes in [08_CSIu_Terminal_Standardization.md](file:///root/portfolio/3_Engineering_and_Troubleshooting/08_CSIu_Terminal_Standardization.md).
+    5. **Documentation:** Appended notes in [07_CSIu_Terminal_Standardization.md](file:///root/portfolio/3_Engineering_and_Troubleshooting/07_CSIu_Terminal_Standardization.md).
 
 ## Date: 15 July 2026
 

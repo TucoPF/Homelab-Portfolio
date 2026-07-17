@@ -115,4 +115,4 @@
 
 ### 4. Verified System Fixes & Learnings
 
-All verified system fixes and learnings are documented chronologically in [System_Fixes_Timeline.md](file:///root/portfolio/3_Engineering_and_Troubleshooting/System_Fixes_Timeline.md). Refer to it for the historical record of troubleshooting and workarounds.
+All verified system fixes and learnings are documented chronologically in [System_Fixes_Timeline.md](file:///root/portfolio/3_Engineering_and_Troubleshooting/01_System_Fixes_Timeline.md). Refer to it for the historical record of troubleshooting and workarounds.
