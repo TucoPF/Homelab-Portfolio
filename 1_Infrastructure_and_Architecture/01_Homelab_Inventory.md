@@ -62,26 +62,28 @@
 - **Services (SAN):**
   - **iSCSI LIO Target (`targetcli`):** `iqn.2024-01.local.homelab:skynet-target` exporting `sda` and `sdd` LUNs over 10G portal `[fddd::2]:3260`.
   - **Proxmox Backup Server:** Datastore `Backups` listening natively on `[fddd::2]:8007` (matrix connects via 10G link)
-- **VMs / Containers:** None
+- **VMs / Containers:**
+  - **VM (Debian Trixie - fddf::4):** High-performance VM with onboard iGPU passthrough. Runs **Sunshine** streaming host for remote desktop capability.
 - **Software:**
   - **OS:** Debian GNU/Linux 13 (trixie, Debian 13.5)
   - **Proxmox VE:** 9.2.3 (running kernel: 7.0.12-1-pve)
 
 
 
-## Pi4 (Raspberry Pi) - Secondary DNS Node (Active-Active HA)
-- **IPv4 Address:** 192.168.1.253/24
+## Pi4 (Raspberry Pi) - Control & Secondary DNS Node (Active-Active HA)
 - **IPv6 ULA Address:** fddf::3/64 (Static)
+- **IPv4 Address:** 192.168.1.253/24 (Legacy/Debugging)
 - **Hostname:** Pi4
 - **Hardware:**
   - **Model:** Raspberry Pi 4 Model B Rev 1.5 (Cortex-A72, 4 cores)
   - **RAM:** 7.6 GiB
   - **Storage:** 238.5G SSD (sda)
 - **Active Services:**
+  - **Moonlight-qt:** Headless client streaming and controlling the high-performance Debian Trixie VM on skynet (`fddf::4`).
   - **AdGuard Home:** Redundant DNS filtering replica (`/opt/AdGuardHome`, port 53/80).
   - **adguardhome-sync:** Sync daemon (`/usr/local/bin/adguardhome-sync`) syncing configurations, custom rewrites, and blocklists from CT115 (matrix) every minute.
 - **Software:**
-  - **OS:** Debian GNU/Linux 13 (trixie, 13.5)
+  - **OS:** Debian GNU/Linux 13 (Pi Lite Trixie)
   - **Kernel:** 6.12.75+rpt-rpi-v8
 
 ## Windows Laptop (T800)
