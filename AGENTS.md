@@ -61,8 +61,9 @@
     *   **LXC 114 (CrowdSec-LAPI)**: Security control plane hosting central LAPI, engine database, and PVE API sync bouncer, 16GB RAM.
     *   **LXC 115 (Adguard Home)**: DNS Rewrite: .example-homelab.com > GUA Traefik, 16GB RAM.
     *   **LXC 121 (Trade)**: Stopped.
-    *   **VM 200 (Debian-Template-Server)**: Stopped.
-    *   **VM 300 (Debian-Template-desktop)**: Stopped.
+    *   **VM 200 (Debian-Server-Template)**: Stopped.
+    *   **VM 400 (Windows-Template-Desktop)**: Stopped.
+    *   **VM 500 (Windows-Template-Server)**: Stopped.
 
 #### 📦 skynet - Storage & Backup Backend (Upgraded Custom Tower)
 *   **Form Factor**: Custom ATX Mid-Tower Storage Server
@@ -88,7 +89,7 @@
 *   **RAM**: 8 GB
 *   **OS**: Debian GNU/Linux 13 (Pi Lite Trixie)
 *   **Local IP**: ULA: `fddf::3` (IPv4: `192.168.1.253`)
-*   **Status**: Serves as a headless controller using `moonlight-qt` to stream the high-performance Debian Trixie VM (`fddf::4`) on skynet. Also runs secondary AdGuard Home DNS sync.
+*   **Status**: Serves as a headless controller using `moonlight-qt` to stream the high-performance Debian Trixie VM (`fddf::4`) on skynet.
 
 ---
 

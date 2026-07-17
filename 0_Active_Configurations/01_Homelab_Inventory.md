@@ -31,10 +31,9 @@
   - **114 (CrowdSec-LAPI-114):** 16 GiB RAM, 8G Disk, Unprivileged, IP: 192.168.1.114 (Decoupled security control plane; hosts central CrowdSec LAPI, database, and custom API sync bouncer daemon)
   - **115 (AdGuard-115):** 16 GiB RAM, 8G Disk, Unprivileged, IP: 192.168.1.115 (DNS Rewrite resolver synced with replica on Pi4)
   - **121 (Trade):** Stopped, 512 MiB RAM, 8G Disk, Unprivileged, IP: 192.168.1.121
-  - **201 (WinServer2025):** Stopped, 16 GiB RAM, 100G Disk, PCIe Passthrough (Intel iGPU VF 1 `00:02.1`, primary VGA)
-  - **202 (WinClient1):** Stopped, 16 GiB RAM, 100G Disk, PCIe Passthrough (Intel iGPU VF 2 `00:02.2`)
-  - **203 (WinClient2 / Emily):** Stopped, 16 GiB RAM, 100G Disk, IP: `192.168.1.203`, PCIe Passthrough (Intel iGPU VF 3 `00:02.3`, primary VGA)
-  - **204 (Pfsense):** Stopped, 2 GiB RAM, 32G Disk
+  - **200 (Debian-Server-Template):** Stopped, 2 GiB RAM, 32G Disk
+  - **400 (Windows-Template-Desktop):** Stopped, 16 GiB RAM, 100G Disk
+  - **500 (Windows-Template-Server):** Stopped, 16 GiB RAM, 100G Disk
 - **Software:**
   - **OS:** Debian GNU/Linux 13 (trixie)
   - **Proxmox VE:** 9.2.3 (running kernel: 7.0.12-1-pve)
@@ -70,7 +69,7 @@
 
 
 
-## Pi4 (Raspberry Pi) - Control & Secondary DNS Node (Active-Active HA)
+## Pi4 (Raspberry Pi) - Control Node
 - **IPv6 ULA Address:** fddf::3/64 (Static)
 - **IPv4 Address:** 192.168.1.253/24 (Legacy/Debugging)
 - **Hostname:** Pi4
@@ -80,8 +79,6 @@
   - **Storage:** 238.5G SSD (sda)
 - **Active Services:**
   - **Moonlight-qt:** Headless client streaming and controlling the high-performance Debian Trixie VM on skynet (`fddf::4`).
-  - **AdGuard Home:** Redundant DNS filtering replica (`/opt/AdGuardHome`, port 53/80).
-  - **adguardhome-sync:** Sync daemon (`/usr/local/bin/adguardhome-sync`) syncing configurations, custom rewrites, and blocklists from CT115 (matrix) every minute.
 - **Software:**
   - **OS:** Debian GNU/Linux 13 (Pi Lite Trixie)
   - **Kernel:** 6.12.75+rpt-rpi-v8
