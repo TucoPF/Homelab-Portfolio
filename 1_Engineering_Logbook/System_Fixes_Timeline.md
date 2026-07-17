@@ -661,3 +661,13 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 * **Implementation:**
   1. **Global Timeout Config:** Appended `serversTransport` to `/etc/traefik/traefik.yaml` on LXC 112 and restarted the `traefik` service to apply the static configuration.
   2. **Dynamic HealthCheck Injection:** Ran a Python script on the hypervisor to parse and append the `healthCheck` block into the `loadBalancer` section of every service's YAML file. Traefik's file watcher reloaded these dynamic rules instantly without downtime, making the proxy auto-healing.
+
+## Date: 17 July 2026
+
+### Issue 46: Headless Moonlight / Sunshine Control Node Integration
+* **Symptoms:** Need to establish a modern, low-latency control flow between the Pi4 (thin client) and the high-performance Debian Trixie VM on skynet using Moonlight-qt/Sunshine while prioritizing IPv6 ULA communication and deprecating legacy IPv4 references.
+* **Diagnosis:** The Pi4 hardware needed to run in headless streaming client mode (Pi Lite Trixie) with `moonlight-qt`. The VM on skynet (`fddf::4`) required iGPU passthrough and Sunshine configured to stream natively.
+* **Fix Applied:** Configured and documented the network endpoints and services. Assigned static ULA `fddf::4` to the VM and `fddf::3` to the Pi4. Updated the global host inventory in both the active and infrastructure folders to maintain consistency.
+* **Implementation:**
+  1. **Documentation Alignment:** Updated `AGENTS.md`, `/root/portfolio/0_Active_Configurations/01_Homelab_Inventory.md`, and `/root/portfolio/1_Infrastructure_and_Architecture/01_Homelab_Inventory.md`.
+  2. **IPv6 Focus:** Marked IPv4 addresses as Legacy/Debugging, locking routing references to the internal ULA IPv6 network.
