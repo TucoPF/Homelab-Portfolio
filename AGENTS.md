@@ -14,7 +14,7 @@
 *   **Preferred Remote Editing**: Use inline Python 3 commands (e.g. `python3 -c "..."`) over SSH for remote file edits.
 *   **Documentation Decision Prompting**: For any edits in the `portfolio` folder, you MUST explicitly ask the user whether to document the information in `AGENTS.md` or in the other documentation files.
 *   **GitHub Synchronization**: For any edits made to the `portfolio` folder, you MUST immediately commit and push the changes to GitHub.
-
+  **SSH remote Access** ALWAYS USE THE USER "AI" AND THE ULA's registered in the documentation to access remote servers. except for LXC CT's, then use lxc-attache from matrix or skynet
 
 ## 🔐 3. AUTHORIZATION & EXECUTION CONTEXT
 *   **Local Context**: AI is running inside LXC **AI-1111** (`192.168.1.19`). All local commands originate here. Use aliases `ssh skynet` and `ssh matrix` to connect to hosts.
