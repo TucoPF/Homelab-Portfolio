@@ -4,7 +4,7 @@
 
 ## 💻 Laptop Environment & Integration (Windows 11)
 - **SSH Agent Forwarding:** Integrated with 1Password SSH Agent via the native Windows OpenSSH named pipe. The `IdentityAgent` directive is commented out in `.ssh/config` to default cleanly.
-- **PowerShell Profile Shortcuts:** Configured quick SSH command wrappers (`m` for matrix, `s` for skynet, `p` for Pi4) in the PowerShell profile.
+- **PowerShell Profile Shortcuts:** Configured quick SSH command wrappers (`m` for matrix, `s` for skynet, `n` for Nuc) in the PowerShell profile.
 - **Networking:** Assigned static ULA reservation (`fddf::10`) and DHCP IPv4 reservation (`192.168.1.10`) on the local network router for T800.
 
 ## 🗄️ Tiered Storage Architecture ("Fusion")

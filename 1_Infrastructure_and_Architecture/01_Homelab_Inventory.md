@@ -29,7 +29,7 @@
   - **112 (Traefik-112):** 16 GiB RAM, 8G Disk, Unprivileged, IP: 192.168.1.112
   - **113 (Authelia-113):** 16 GiB RAM, 8G Disk, Unprivileged, IP: 192.168.1.113 (Centralized SSO/MFA provider; handles SAML/OIDC authentication chained as a ForwardAuth middleware on Traefik)
   - **114 (CrowdSec-LAPI-114):** 16 GiB RAM, 8G Disk, Unprivileged, IP: 192.168.1.114 (Decoupled security control plane; hosts central CrowdSec LAPI, database, and custom API sync bouncer daemon)
-  - **115 (AdGuard-115):** 16 GiB RAM, 8G Disk, Unprivileged, IP: 192.168.1.115 (DNS Rewrite resolver synced with replica on Pi4)
+  - **115 (AdGuard-115):** 16 GiB RAM, 8G Disk, Unprivileged, IP: 192.168.1.115 (DNS Rewrite resolver synced with replica on Nuc)
   - **121 (Trade):** Stopped, 512 MiB RAM, 8G Disk, Unprivileged, IP: 192.168.1.121
   - **200 (Debian-Server-Template):** Stopped, 2 GiB RAM, 32G Disk
   - **400 (Windows-Template-Desktop):** Stopped, 16 GiB RAM, 100G Disk
@@ -67,21 +67,19 @@
   - **OS:** Debian GNU/Linux 13 (trixie, Debian 13.5)
   - **Proxmox VE:** 9.2.3 (running kernel: 7.0.12-1-pve)
 
-
-
-## Pi4 (Raspberry Pi) - Control Node
+## Nuc (Intel NUC) - Control Node
 - **IPv6 ULA Address:** fddf::3/64 (Static)
 - **IPv4 Address:** 192.168.1.253/24 (Legacy/Debugging)
-- **Hostname:** Pi4
+- **Hostname:** Nuc
 - **Hardware:**
-  - **Model:** Raspberry Pi 4 Model B Rev 1.5 (Cortex-A72, 4 cores)
-  - **RAM:** 7.6 GiB
-  - **Storage:** 238.5G SSD (sda)
+  - **Model:** Intel NUC
+  - **RAM:** 8 GiB
+  - **Storage:** SSD
 - **Active Services:**
   - **Moonlight-qt:** Headless client streaming and controlling the high-performance Debian Trixie VM on skynet (`fddf::4`).
 - **Software:**
-  - **OS:** Debian GNU/Linux 13 (Pi Lite Trixie)
-  - **Kernel:** 6.12.75+rpt-rpi-v8
+  - **OS:** Debian GNU/Linux 13 (trixie)
+  - **Network stack:** systemd-networkd & iwd (Wi-Fi)
 
 ## Windows Laptop (T800)
 - **IP Address:** 192.168.1.10 (ULA: fddf::10)
