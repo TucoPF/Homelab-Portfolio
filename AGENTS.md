@@ -25,7 +25,10 @@
     *   *Sensitive Data*: Forbidden to exfiltrate without permission.
 
 ## 📂 4. DIRECTORY REFERENCE
-**All core documentation and inventory details are located in `/home/tuco/portfolio`.** Refer to them as the primary source of truth.
+**All core documentation and inventory details are located in `/home/AI/portfolio`.** Refer to them as the primary source of truth.
+**You might find additional documentation on specific projects in /home/AI/Repos&Docs**
+
+
 
 ---
 
