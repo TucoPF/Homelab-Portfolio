@@ -82,14 +82,14 @@
     *   ZFS Storage: 2x 10 TB Seagate Exos SAS HDDs (`sdb`, `sdc`) natively pooled locally on skynet as a ZFS Mirror (`zfs-pool`).
 *   **Services**: `pveproxy`, `pve-cluster`, `proxmox-backup-server` (Datastore `Backups` bound to `[fddd::2]:8007`), `targetcli` (iSCSI LIO Target `iqn.2024-01.local.homelab:skynet-target` configured over 10G portal `[fddd::2]:3260`). skynet natively runs ZFS for the Cloud Storage Tier.
 *   **Active Virtualization**:
-    *   **VM (Debian Trixie - fddf::4)**: High-performance Debian Trixie VM with iGPU passthrough. Streams via Sunshine for remote desktop hosting.
+    *   **VM (Debian Trixie - fddf::2222)**: High-performance Debian Trixie VM with iGPU passthrough. Streams via Sunshine for remote desktop hosting.
 
 #### 💻 Nuc - Redundant Services Node / Control Node
 *   **Model**: Intel NUC
 *   **RAM**: 8 GB
 *   **OS**: Debian GNU/Linux 13 (trixie)
 *   **Local IP**: ULA: `fddf::3` (IPv4: `192.168.1.253`)
-*   **Status**: Serves as a headless controller using `moonlight-qt` to stream the high-performance Debian Trixie VM (`fddf::4`) on skynet.
+*   **Status**: Serves as a headless controller using `moonlight-qt` to stream the high-performance Debian Trixie VM (`fddf::2222`) on skynet.
 
 ---
 
