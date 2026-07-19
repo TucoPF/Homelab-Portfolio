@@ -671,3 +671,28 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 * **Implementation:**
   1. **Documentation Alignment:** Updated `AGENTS.md`, `/root/portfolio/0_Active_Configurations/01_Homelab_Inventory.md`, and `/root/portfolio/1_Infrastructure_and_Architecture/01_Homelab_Inventory.md`.
   2. **IPv6 Focus:** Marked IPv4 addresses as Legacy/Debugging, locking routing references to the internal ULA IPv6 network.
+
+## Date: 19 July 2026
+
+### Issue 47: Re-creation of Proxmox Backup Server (PBS) Datastore and Cluster Re-integration
+* **Symptoms:** The PBS datastore `Backups` became inactive across the Proxmox cluster (specifically on `matrix` and `skynet`) after replacing the backup SSD. The storage definition was absent from `/etc/pve/storage.cfg`, and the PBS daemon logged prune errors.
+* **Diagnosis:** The user replaced the 1TB backup SSD with a 256GB SSD (`nvme1n1`). The new drive was mounted at `/mnt/datastore/Backups` and formatted with XFS, but the PVE storage configuration lacked the corresponding PBS storage definition. The PBS service also needed a restart to recognize the empty datastore state, and a secure API token was required to re-authenticate the PVE nodes.
+* **Fix Applied:** Re-registered the `Backups` datastore configuration, generated a dedicated PBS API token (`root@pam!backup-token`), authorized it via ACLs (`DatastoreAdmin`), and re-added the PBS storage to PVE.
+* **Implementation:**
+  1. **PBS Service Restart:** Restarted the PBS daemons on `skynet` (`fddf::2`) to clean up database lock status and log state:
+     ```bash
+     sudo systemctl restart proxmox-backup-proxy proxmox-backup
+     ```
+  2. **API Token Creation:** Generated a dedicated API token on PBS for cluster authentication:
+     ```bash
+     sudo proxmox-backup-manager user generate-token root@pam backup-token
+     ```
+  3. **ACL Authorization:** Added permissions for the token on `/datastore/Backups` with the `DatastoreAdmin` role:
+     ```bash
+     sudo proxmox-backup-manager acl update /datastore/Backups DatastoreAdmin --auth-id root@pam!backup-token
+     ```
+  4. **PVE Storage Registration:** Executed `pvesm add` on `matrix` (`fddf::1`) to register the PBS storage cluster-wide over the 10G storage link (`fddd::2`), using the new token credentials and the retrieved certificate fingerprint:
+     ```bash
+     sudo pvesm add pbs Backups --datastore Backups --server fddd::2 --username root@pam!backup-token --password <token_value> --fingerprint 47:15:ef:db:ea:69:a8:ee:ae:4b:aa:fb:56:94:5a:b5:22:c0:c3:9a:8b:51:cd:bb:b4:97:60:b8:e7:71:a9:18
+     ```
+  5. **Verification:** Executed `pvesm status` on both nodes, confirming the status changed to `active` and storage capacity is reported correctly.
