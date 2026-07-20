@@ -696,3 +696,17 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      sudo pvesm add pbs Backups --datastore Backups --server fddd::2 --username root@pam!backup-token --password <token_value> --fingerprint 47:15:ef:db:ea:69:a8:ee:ae:4b:aa:fb:56:94:5a:b5:22:c0:c3:9a:8b:51:cd:bb:b4:97:60:b8:e7:71:a9:18
      ```
   5. **Verification:** Executed `pvesm status` on both nodes, confirming the status changed to `active` and storage capacity is reported correctly.
+
+## Date: 20 July 2026
+
+### Issue 48: Headless Moonlight Flatpak EGLFS Display and Input Failures on NUC Client (TTY)
+* **Symptoms:** Running Moonlight via Flatpak directly on the physical console TTY (without a desktop environment) failed with `SDL Error: kmsdrm not available` or hung with `Could not set DRM mode (Autorisation refusée)`, and keyboard inputs were completely unresponsive.
+* **Diagnosis:** Flatpak's user namespace isolation blocks GID mapping, causing the host's `video`, `render`, and `input` groups to be unmapped (showing as `nfsnobody`) inside the sandbox. The sandboxed application is blocked from accessing the GPU nodes and input nodes directly. Additionally, Flatpak's D-Bus proxy blocks file descriptor (FD) passing for `systemd-logind`'s `TakeDevice` interface, preventing the non-root user `tuco` from acquiring the DRM Master lock.
+* **Fix Applied:** Switched from EGLFS to a minimal Wayland Kiosk compositor (`cage`) running natively on the host to manage session initialization. Configured Flatpak overrides to explicitly map DRI devices and permit logind D-Bus communication.
+* **Implementation:**
+  1. **Wayland Kiosk:** Installed the native Wayland kiosk: `sudo apt install -y cage` on the Nuc.
+  2. **Flatpak Device Overrides:** Allowed explicit DRI access and D-Bus logind access in Flatpak:
+     `sudo flatpak override --device=all --device=dri --talk-name=org.freedesktop.login1 com.moonlight_stream.Moonlight`
+  3. **Cleanup:** Removed any redundant `SDL_DRM_DEVICE` overrides (`--unset-env=SDL_DRM_DEVICE`) and deleted the experimental `udev` rules to preserve security.
+  4. **Launch Command:** Launched Moonlight cleanly inside the kiosk Wayland environment:
+     `cage flatpak run com.moonlight_stream.Moonlight`
