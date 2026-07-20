@@ -710,3 +710,21 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
   3. **Cleanup:** Removed any redundant `SDL_DRM_DEVICE` overrides (`--unset-env=SDL_DRM_DEVICE`) and deleted the experimental `udev` rules to preserve security.
   4. **Launch Command:** Launched Moonlight cleanly inside the kiosk Wayland environment:
      `cage flatpak run com.moonlight_stream.Moonlight`
+
+### Issue 49: USB Autosuspend Delays and CPU Latency Optimization on NUC Client
+* **Symptoms:** Keyboard and mouse (specifically Logitech and CX 2.4G wireless receivers) experienced wake-up delay and went to sleep after a few seconds of inactivity under the Cage/Wayland headless Moonlight setup. CPU scaling driver `intel_pstate` used default `balance_performance` but required persistence and validation.
+* **Diagnosis:** USB autosuspend was enabled for HIDs/receivers, suspending them after 2 seconds of inactivity. The Intel P-State scaling driver was running with the `powersave` governor and `balance_performance` EPP, which was the correct target configuration but required persistence confirmation.
+* **Fix Applied:** Configured persistence for EPP scaling and added targeted `udev` rules to disable USB autosuspend for Logitech (`046d:c53f`) and CX 2.4G (`3554:fa0a`) wireless receivers.
+* **Implementation:**
+  1. **CPU EPP Persistence:** Configured systemd-tmpfiles `/etc/tmpfiles.d/cpu-epp.conf` on the NUC to force `balance_performance` at boot:
+     ```text
+     w /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference - - - - balance_performance
+     ```
+  2. **USB Autosuspend Rules:** Created `/etc/udev/rules.d/50-usb-autosuspend.rules` to set `power/control` to `on` for both input receivers:
+     ```udev
+     # Logitech Receiver
+     ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="046d", ATTR{idProduct}=="c53f", ATTR{power/control}="on"
+     # CX 2.4G Keyboard Receiver
+     ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="3554", ATTR{idProduct}=="fa0a", ATTR{power/control}="on"
+     ```
+  3. **Verification:** Confirmed after reboot/trigger that `/sys/bus/usb/devices/.../power/control` evaluates to `on` for both receivers.
