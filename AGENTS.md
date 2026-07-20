@@ -94,7 +94,7 @@
 *   **RAM**: 8 GB DDR4
 *   **OS**: Debian GNU/Linux 13 (trixie, version 13.6, Kernel `6.12.95+deb13-amd64`)
 *   **Local IP**: ULA: `fddf::3` (IPv4: `192.168.1.253`)
-*   **Status**: Serves as a headless controller using `moonlight-qt` to stream the high-performance Debian Trixie VM (`fddf::2222`) on skynet. Optimized with BBR congestion control, CPU governor set to `performance`, and Wi-Fi power saving disabled.
+*   **Status**: Serves as a headless controller using `moonlight-qt` to stream the high-performance Debian Trixie VM (`fddf::2222`) on skynet. Optimized with BBR congestion control, CPU governor running on default dynamic `powersave` (preventing fan noise while idling), and Wi-Fi power saving disabled.
 
 
 ---
