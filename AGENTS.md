@@ -26,7 +26,7 @@
 
 ## 📂 4. DIRECTORY REFERENCE
 **All core documentation and inventory details are located in `/root/portfolio`.** Refer to them as the primary source of truth.
-**You might find additional documentation on specific projects in /home/AI/Repos&Docs**
+**You might find additional documentation on specific projects in /root/Repos&Docs**
 
 
 
