@@ -33,3 +33,8 @@
 
 ## 🛡️ Service Self-Healing & Network Resilience (Authelia)
 - **Authelia Boot Failure Fix (LXC 113):** Configured a systemd drop-in override at `/etc/systemd/system/authelia.service.d/override.conf` with `Restart=on-failure` and `RestartSec=10s` to ensure recovery from transient boot-time lookup errors. Added `disable_startup_check: true` to the `notifier` block in `/etc/authelia/configuration.yml` to prevent blocking on remote SMTP (`smtp-relay.brevo.com`) connectivity when the DNS/gateway nodes are not yet active during parallel host startup.
+
+## 💻 Nuc Client Optimizations (Intel NUC7i3DNHE)
+- **CPU Scaling Governor:** Configured a persistent systemd service (`cpu-governor.service`) that forces all cores to the `performance` scaling governor at boot time, eliminating decoding stutters under Moonlight while preserving hardware C-state power saving at idle.
+- **TCP BBR:** Enabled BBR congestion control and Fair Queueing (`fq`) to optimize TCP packet delivery.
+- **Wi-Fi Power Management:** Disabled Wi-Fi power saving on `wlan0` (`Power save: off`) to prevent packet drops and latency spikes during downstream video streams.

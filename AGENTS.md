@@ -88,11 +88,14 @@
     *   **VM (Debian Trixie - fddf::2222)**: High-performance Debian Trixie VM with iGPU passthrough. Streams via Sunshine for remote desktop hosting.
 
 #### 💻 Nuc - Redundant Services Node / Control Node
-*   **Model**: Intel NUC
-*   **RAM**: 8 GB
-*   **OS**: Debian GNU/Linux 13 (trixie)
+*   **Model**: Intel NUC7i3DNHE (Motherboard: NUC7i3DNB)
+*   **CPU**: Intel(R) Core(TM) i3-7100U CPU @ 2.40GHz (2 Cores / 4 Threads)
+*   **GPU**: Intel Corporation HD Graphics 620 (rev 02)
+*   **RAM**: 8 GB DDR4
+*   **OS**: Debian GNU/Linux 13 (trixie, version 13.6, Kernel `6.12.95+deb13-amd64`)
 *   **Local IP**: ULA: `fddf::3` (IPv4: `192.168.1.253`)
-*   **Status**: Serves as a headless controller using `moonlight-qt` to stream the high-performance Debian Trixie VM (`fddf::2222`) on skynet.
+*   **Status**: Serves as a headless controller using `moonlight-qt` to stream the high-performance Debian Trixie VM (`fddf::2222`) on skynet. Optimized with BBR congestion control, CPU governor set to `performance`, and Wi-Fi power saving disabled.
+
 
 ---
 

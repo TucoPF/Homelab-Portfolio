@@ -72,14 +72,16 @@
 - **IPv4 Address:** 192.168.1.253/24 (Legacy/Debugging)
 - **Hostname:** Nuc
 - **Hardware:**
-  - **Model:** Intel NUC
-  - **RAM:** 8 GiB
+  - **Model:** Intel NUC7i3DNHE (Motherboard: NUC7i3DNB)
+  - **CPU:** Intel(R) Core(TM) i3-7100U CPU @ 2.40GHz (2 Cores / 4 Threads)
+  - **GPU:** Intel Corporation HD Graphics 620 (rev 02)
+  - **RAM:** 8 GiB DDR4
   - **Storage:** SSD
 - **Active Services:**
-  - **Moonlight-qt:** Headless client streaming and controlling the high-performance Debian Trixie VM on skynet (`fddf::4`).
+  - **Moonlight-qt:** Headless client streaming and controlling the high-performance Debian Trixie VM on skynet (`fddf::2222`).
 - **Software:**
-  - **OS:** Debian GNU/Linux 13 (trixie)
-  - **Network stack:** systemd-networkd & iwd (Wi-Fi)
+  - **OS:** Debian GNU/Linux 13 (trixie, version 13.6, Kernel `6.12.95+deb13-amd64`)
+  - **Network stack:** systemd-networkd & iwd (Wi-Fi `wlan0`, Power Save disabled)
 
 ## Windows Laptop (T800)
 - **IP Address:** 192.168.1.10 (ULA: fddf::10)
