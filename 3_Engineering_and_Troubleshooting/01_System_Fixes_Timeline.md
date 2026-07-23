@@ -1,5 +1,24 @@
 # System Fixes Log
 
+## Date: 23 July 2026
+
+### Issue: `skynet` 5GbE Network Link Loss after Proxmox Kernel Upgrade
+* **Symptoms:** After rebooting `skynet` onto PVE kernel `7.0.14-6-pve`, the primary ULA interface `fddf::2` (`nic0` / `vmbr0`) became completely unreachable. The 10G direct SAN link `fddd::2` (`vmbr2`) remained active and reachable from `matrix`.
+* **Diagnosis:** The Realtek RTL8126 5GbE controller required the `realtek-r8126-dkms` module (version 10.017.00) while the native kernel driver `r8169` was blacklisted in `/etc/modprobe.d/blacklist.conf`. During the kernel upgrade to `7.0.14-6-pve`, DKMS failed to rebuild the module because `proxmox-headers` for the new kernel were missing, leaving `nic0` without a driver.
+* **Fix Applied:** 
+  1. Routed temporary internet access from `matrix` (`fddd::1`) to `skynet` (`fddd::2`).
+  2. Installed kernel headers (`proxmox-headers-7.0.14-6-pve`) and `proxmox-default-headers` to automate header installation for all future kernel updates.
+  3. Rebuilt and installed the `r8126` module via `dkms autoinstall`.
+  4. Added `r8126` to `/etc/modules` for explicit boot loading.
+  5. Kept the fallback 10G IPv6 default route via `matrix` (`fddd::1`) for resilience.
+* **Implementation:**
+  ```bash
+  sudo apt-get update && sudo apt-get install -y proxmox-default-headers proxmox-headers-$(uname -r)
+  sudo dkms autoinstall -k $(uname -r)
+  echo "r8126" | sudo tee -a /etc/modules
+  sudo ip link set dev nic0 master vmbr0 && sudo ip link set dev nic0 up
+  ```
+
 ## Date: 10 March 2026
 
 ### Issue 1: Unexpected Idle Reboots
