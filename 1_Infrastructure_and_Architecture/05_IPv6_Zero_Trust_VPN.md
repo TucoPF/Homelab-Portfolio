@@ -21,6 +21,7 @@ The solution relies on **IPv6 Prefix Delegation**, **WireGuard**, and **automate
 3.  **Internal Servers (matrix & skynet):**
     *   Assigned static ULAs (`fddf::1/64` and `fddf::2/64`).
     *   Configured with static routes pointing VPN traffic (`fdfd::/64`) back to the CT 111 Gateway (`fddf::111`).
+    *   *Architectural Note:* Static routes are explicitly mandated for all internal clients over dynamic RIO (Route Information Option) announcements to preserve the default Linux kernel security posture (`accept_ra_rt_info_max_plen=0`), preventing Route Hijacking vulnerabilities.
     *   Protected by Proxmox Node firewalls, allowing access only from the trusted `admin` IPSET (which includes the specific VPN client IPs).
 
 4.  **Client (Laptop):**

@@ -747,3 +747,14 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="3554", ATTR{idProduct}=="fa0a", ATTR{power/control}="on"
      ```
   3. **Verification:** Confirmed after reboot/trigger that `/sys/bus/usb/devices/.../power/control` evaluates to `on` for both receivers.
+
+## Date: 24 July 2026
+
+### Issue 50: IPv6 Wintun Roaming Drops & Route Information Option (RIO) Security Blocks
+* **Symptoms:** The WireGuard VPN connection on Windows (T800) experienced intermittent dropouts and continuous "Neighbour Solicitations" flooding the `fdfd::/112` subnet during roaming (switching from cellular back to LAN). Additionally, Proxmox VMs were unable to automatically learn the ULA route to `fdfd::/112` via Router Advertisements (RA).
+* **Diagnosis:** 
+  1. **Wintun Driver Behavior:** The Windows Wintun virtual adapter attempted Layer 2 hardware discovery (NDP Solicitations) inside a Layer 3 tunnel during network transitions because the WireGuard endpoint DNS resolution was stale (pointing to Traefik's IPv4 instead of the GUA IPv6 endpoint).
+  2. **IPv6 RIO Security (accept_ra_rt_info_max_plen):** The attempt to use CT 111 as an RA RIO announcer to inject the `fdfd::/112` route directly into Proxmox VMs failed. The Linux kernel (Debian/Ubuntu) enforces a strict default security parameter `accept_ra_rt_info_max_plen=0` on all virtual interfaces to prevent Route Hijacking, which causes the VM to silently discard specific route announcements (RIO) unless explicitly permitted.
+* **Fix Applied:** 
+  1. **VPN Endpoint Resolution:** Resolved the Wintun timeout by ensuring the WireGuard client reconnects cleanly to the correct IPv6 GUA endpoint.
+  2. **Architecture Decision (Static Routes):** Decided against global `sysctl` modifications or NAT Masquerade to maintain Zero-Trust architectural purity. Chose to implement static routes manually in `/etc/network/interfaces` for any Proxmox node/client needing direct access to the `fdfd::/112` VPN subnet.
