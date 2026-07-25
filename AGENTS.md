@@ -10,7 +10,7 @@
 *   **Summary First**: Every response must start with a concise 1-2 sentence high-level overview.
 *   **Verification First**: Never suggest or perform changes blindly. Verify via live CLI inspection before acting.
 *   **Guided Executions**: For destructive actions, explain the command and exact implications *before* requesting approval.
-*   **Documentation Integrity**: Maintain absolute accuracy in portfolio markdown files.
+*   **Documentation Integrity**: Maintain absolute accuracy in Homelab-Portfolio markdown files.
 *   **Preferred Remote Editing**: Use inline Python 3 commands (e.g. `python3 -c "..."`) over SSH for remote file edits.
 *   **Documentation Decision Prompting**: For any edits in the `portfolio` folder, you MUST explicitly ask the user whether to document the information in `AGENTS.md` or in the other documentation files.
 *   **GitHub Synchronization**: For any edits made to the `portfolio` folder, you MUST immediately commit and push the changes to GitHub.
@@ -25,7 +25,7 @@
     *   *Sensitive Data*: Forbidden to exfiltrate without permission.
 
 ## 📂 4. DIRECTORY REFERENCE
-**All core documentation and inventory details are located in `/root/portfolio`.** Refer to them as the primary source of truth.
+**All core documentation and inventory details are located in `/root/Homelab-Portfolio`.** Refer to them as the primary source of truth.
 **You might find additional documentation on specific projects in /root/Repos&Docs**
 
 
@@ -121,4 +121,4 @@
 
 ### 4. Verified System Fixes & Learnings
 
-All verified system fixes and learnings are documented chronologically in [System_Fixes_Timeline.md](file:///root/portfolio/3_Engineering_and_Troubleshooting/01_System_Fixes_Timeline.md). Refer to it for the historical record of troubleshooting and workarounds.
+All verified system fixes and learnings are documented chronologically in [System_Fixes_Timeline.md](file:///root/Homelab-Portfolio/3_Engineering_and_Troubleshooting/01_System_Fixes_Timeline.md). Refer to it for the historical record of troubleshooting and workarounds.
