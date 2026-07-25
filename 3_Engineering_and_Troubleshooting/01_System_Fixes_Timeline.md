@@ -11,13 +11,13 @@
 * **Fix Applied:** 
   1. Decommissioned unused NFS storage entry (`nfs`) from Proxmox Datacenter.
   2. Configured Proxmox native ZFS over iSCSI (`iscsiprovider LIO`) between `matrix` (`Remote-pool`) and `skynet` (`Local-pool`).
-  3. Updated persistent iSCSI node database on `matrix` (`/var/lib/iscsi/nodes/iqn.2024-01.local.homelab:skynet-target/fddd::2,3260,1/default`) using `iscsiadm -m node -o update -n node.startup -v manual` and set `login_timeout=3` and `initial_login_retry_max=2`.
-  4. Added `x-systemd.device-timeout=5s` to `/etc/fstab` for `disk1` and `disk2` on `matrix`.
+  3. Updated persistent iSCSI node database on `matrix` (`/var/lib/iscsi/nodes/iqn.2024-01.local.homelab:skynet-target/fddd::2,3260,1/default`) to maintain `node.startup = automatic` for Media drives while setting fast timeouts (`login_timeout = 3`, `initial_login_retry_max = 2`), enabling automatic block device attachment on boot without blocking host startup if network links lag.
+  4. Added `x-systemd.device-timeout=5s` to `/etc/fstab` for `disk1` and `disk2` on `matrix`, and removed invalid `,nofail` parameters from MergerFS FUSE mount options.
   5. Updated LXC volume references (`1111`, `131`, `132`) on `skynet` to `Local-pool:`.
 * **Implementation:**
   ```bash
-  # Tune persistent iSCSI node database on matrix
-  sudo iscsiadm -m node -T iqn.2024-01.local.homelab:skynet-target -o update -n node.startup -v manual
+  # Tune persistent iSCSI node database on matrix for fast auto-login
+  sudo iscsiadm -m node -T iqn.2024-01.local.homelab:skynet-target -o update -n node.startup -v automatic
   sudo iscsiadm -m node -T iqn.2024-01.local.homelab:skynet-target -o update -n node.session.initial_login_retry_max -v 2
   sudo iscsiadm -m node -T iqn.2024-01.local.homelab:skynet-target -o update -n node.conn[0].timeo.login_timeout -v 3
   ```
