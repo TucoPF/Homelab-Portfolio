@@ -10,10 +10,9 @@
 ## 🗄️ Tiered Storage Architecture ("Fusion")
 - **Mechanism:** MergerFS pooling local NVMe (`/mnt/matrix-cache`) with local MergerFS pool `/mnt/matrix-pool` (pooling local EXT4 disks `disk1` and `disk2` mapped via iSCSI from skynet).
 - **Mount Point:** `/mnt/fusion`
-- **NFS Options (for Backup):** `hard,timeo=600,retrans=5` (Optimized for large file transfers from matrix to skynet's backup SSD).
-- **Container Mount Dependencies:** 
-  * `pve-container@101.service` (Jellyfin) and `pve-container@103.service` (Arr-Stack) require `mnt-fusion.mount`. They will not start if `/mnt/fusion` is unmounted, preventing database wipes.
-  * `pve-container@102.service` (NZBGet) requires `mnt-matrix\x2dcache.mount` to prevent downloading to the host OS root filesystem if the cache SSD is offline.
+- **iSCSI Mount Options:** `_netdev,noatime,nofail,noexec,x-systemd.device-timeout=5s` on `disk1` and `disk2` in `/etc/fstab` to eliminate host boot hangs.
+- **iSCSI Target DB Tuning:** `/var/lib/iscsi/nodes/` persistent target records configured with `node.startup = manual`, `login_timeout = 3`, and `initial_login_retry_max = 2` to prevent 4-minute boot delays when storage links initialize.
+- **Cloud Tier SAN:** Native Proxmox ZFS over iSCSI (`LIO` provider) connecting `matrix` (`Remote-pool`) to `skynet` (`Local-pool`) over the 10G link (`fddd::2`).
 
 
 ## 🏗️ Virtualization & Permissions (Proxmox)

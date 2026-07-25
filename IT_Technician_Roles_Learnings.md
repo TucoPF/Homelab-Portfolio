@@ -40,10 +40,10 @@
 *   **Méthodes d'apprentissage :**
     *   Migration de la machine physique de stockage `skynet` de PBS à PVE 9 tout en réimportant les partitions labellisées et le pool ZFS sans perte de données.
 *   **Cas pratiques de Troubleshooting :**
-    *   *Timing iSCSI au démarrage à froid (Cold Boot) :* matrix démarrait plus vite que le backend skynet, provoquant des échecs de montage. Résolu en augmentant `node.session.initial_login_retry_max` à `120` dans `iscsid.conf`.
+    *   *Timing iSCSI au démarrage (Boot resilience) :* Élimination du blocage au démarrage de 4 minutes de matrix en configurant `node.startup = manual` dans la base de données de cible `iscsiadm` (`/var/lib/iscsi/nodes/`) et en appliquant des timeouts rapides (`login_timeout=3`, `initial_login_retry_max=2`, `x-systemd.device-timeout=5s` dans `/etc/fstab`), permettant à matrix de démarrer en quelques secondes même si skynet est hors-ligne.
     *   *Ticking mécanique & Calibration SAS Seagate Exos :* Diagnostic de cliquetis périodiques. Alignement des conditions d'énergie EPC (`Idle_A`, `Idle_B` via `sdparm`) et écriture d'un script systemd au boot (`sas-power-management.service`) pour forcer les disques dans l'état de veille souhaité afin d'éviter l'usure mécanique des moteurs de broche.
     *   *Trim SSD Redondant :* Alignement du fstrim du cache NVMe avec le script `fusion_mover.sh` via un flag RAM (`/dev/shm/fusion_mover_moved`) pour éviter l'usure prématurée des cellules flash.
-    *   *NFS I/O Errors (EIO) sur gros fichiers (80Go+) :* Résolution des plantages de transferts en remplaçant l'option de montage NFS `soft` par `hard,timeo=600,retrans=5`.
+    *   *Architecture Cloud Storage SAN (ZFS over iSCSI) :* Configuration du stockage ZFS sur iSCSI natif Proxmox (`iscsiprovider LIO`) exposant `Local-pool` sur skynet et `Remote-pool` sur matrix pour l'allocation dynamique de ZVOLs sans overhead NFS.
     *   *Optimisation d'espace utile :* Récupération de ~550 Go d'espace disque en réduisant l'espace bloc réservé d'EXT4 de 5% à 1% sur l'ensemble des disques durs (`tune2fs -m 1`).
 
 ## 4. Analyste en Pentesting & Audit de Sécurité
