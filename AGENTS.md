@@ -100,11 +100,11 @@
 ---
 
 
-### 2. Tiered Storage Strategy (Fusion v4.0 - NFS SAN & God-Mode ACL Architecture)
+### 2. Tiered Storage Strategy (Fusion v4.0 - ZFS over iSCSI SAN & God-Mode ACL Architecture)
 
 *   **Cache Tier**: Local high-speed 2TB NVMe SSD (`/mnt/matrix-cache` on `nvme1n1`) on matrix. Reserved blocks set to 0%. Default POSIX ACLs force `777` permissions.
-*   **Cold Storage Tier (Media)**: 2x 10TB SAS drives mapped via iSCSI from skynet, formatted as EXT4 (`disk1`, `disk2`). Default POSIX ACLs force `777` natively. Pooled on matrix via MergerFS at `/mnt/matrix-pool`. All physical layers mounted with `noexec` in `/etc/fstab` for absolute security.
-*   **Cloud Storage Tier**: 2x 10TB SAS drives natively pooled on skynet as a ZFS Mirror (`zfs-pool`). matrix consumes this highly reliable storage via a native NFS Export (`/zfs-pool/pve-nfs` over `fddd::/64`), mounted dynamically in Proxmox Datacenter as `nfs`. This completely eliminates `systemd` locking issues and unprivileged UID mapping errors.
+*   **Cold Storage Tier (Media)**: 2x 10TB SAS drives mapped via iSCSI from skynet, formatted as EXT4 (`disk1`, `disk2`). Default POSIX ACLs force `777` natively. Pooled on matrix via MergerFS at `/mnt/matrix-pool`. All physical layers mounted with `noexec,x-systemd.device-timeout=5s` in `/etc/fstab` for absolute security and fast boot resilience.
+*   **Cloud Storage Tier**: 2x 10TB SAS drives natively pooled on skynet as a ZFS Mirror (`zfs-pool`). Exposed natively on skynet as **`Local-pool`** (`zfspool` for local LXCs/VMs) and consumed by matrix over the 10G link (`fddd::2`) as **`Remote-pool`** via native Proxmox ZFS over iSCSI (`iscsiprovider LIO`). Persistent iSCSI target database records configured with `node.startup = manual` and fast-fail connection retries, eliminating host boot locks while preserving on-demand dynamic ZVOL allocation.
 *   **The Glue**: MergerFS on matrix combines the local SSD cache (`/mnt/matrix-cache`) and the local HDD pool (`/mnt/matrix-pool`) at `/mnt/fusion`. Caching attributes set to `attr_timeout=2`.
 *   **The "Fusion Trick"**: Native downloaders (like NZBGet) mount the master cache (`/mnt/matrix-cache`) directly into their CT via Proxmox Bind Mounts (e.g. `mp0: /mnt/matrix-cache,mp=/mnt/fusion`). Because paths match, imports are instant atomic hardlinks on the local NVMe cache.
 *   **Nightly Mover**: Automated script `fusion_mover.sh` runs locally on matrix daily at 03:00 AM. It moves aged media files from `/mnt/matrix-cache` directly to `/mnt/matrix-pool`, letting MergerFS automatically balance the writes across `disk1` and `disk2` via the `epmfs` policy.

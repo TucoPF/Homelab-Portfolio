@@ -1,5 +1,27 @@
 # System Fixes Log
 
+## Date: 25 July 2026
+
+### Issue: Proxmox Host Boot Delay & Transition to Native ZFS over iSCSI SAN (`Remote-pool` / `Local-pool`)
+* **Symptoms:** Rebooting `matrix` caused a 4-minute boot hang at `open-iscsi.service` when `skynet` was offline or slow to initialize. Additionally, the NFS SAN share (`/zfs-pool/pve-nfs`) was unused and inefficient for dynamic VM ZVOL disk provisioning.
+* **Diagnosis:** 
+  1. `systemd-analyze blame` identified `open-iscsi.service` spending 4 minutes 15 seconds attempting auto-logins to `fddd::2:3260` during early boot because the target record in `/var/lib/iscsi/nodes/` was set to `node.startup = automatic` with a 120-retry limit.
+  2. `/etc/fstab` iSCSI block mounts for `disk1`/`disk2` lacked fast device timeouts (`x-systemd.device-timeout=5s`), forcing `systemd` to wait up to 90 seconds per device.
+  3. Renaming local storage IDs broke LXC container rootfs/subvol bindings on `skynet` because container configs in `/etc/pve/nodes/skynet/lxc/*.conf` hardcoded the storage ID prefix.
+* **Fix Applied:** 
+  1. Decommissioned unused NFS storage entry (`nfs`) from Proxmox Datacenter.
+  2. Configured Proxmox native ZFS over iSCSI (`iscsiprovider LIO`) between `matrix` (`Remote-pool`) and `skynet` (`Local-pool`).
+  3. Updated persistent iSCSI node database on `matrix` (`/var/lib/iscsi/nodes/iqn.2024-01.local.homelab:skynet-target/fddd::2,3260,1/default`) using `iscsiadm -m node -o update -n node.startup -v manual` and set `login_timeout=3` and `initial_login_retry_max=2`.
+  4. Added `x-systemd.device-timeout=5s` to `/etc/fstab` for `disk1` and `disk2` on `matrix`.
+  5. Updated LXC volume references (`1111`, `131`, `132`) on `skynet` to `Local-pool:`.
+* **Implementation:**
+  ```bash
+  # Tune persistent iSCSI node database on matrix
+  sudo iscsiadm -m node -T iqn.2024-01.local.homelab:skynet-target -o update -n node.startup -v manual
+  sudo iscsiadm -m node -T iqn.2024-01.local.homelab:skynet-target -o update -n node.session.initial_login_retry_max -v 2
+  sudo iscsiadm -m node -T iqn.2024-01.local.homelab:skynet-target -o update -n node.conn[0].timeo.login_timeout -v 3
+  ```
+
 ## Date: 23 July 2026
 
 ### Issue: `skynet` 5GbE Network Link Loss after Proxmox Kernel Upgrade
