@@ -17,7 +17,7 @@
   **SSH remote Access** ALWAYS use the user "AI" and the ULA's registered in the documentation to access remote servers. except for LXC CT's, then use lxc-attache from matrix or skynet
 
 ## 🔐 3. AUTHORIZATION & EXECUTION CONTEXT
-*   **Local Context**: AI is running inside LXC **AI-1111** (`192.168.1.19`). All local commands originate here. Use aliases `ssh skynet` and `ssh matrix` to connect to hosts.
+*   **Local Context**: AI is running inside LXC **AI-1111** (`fddf::1111`). All local commands originate here. Use aliases `ssh skynet` and `ssh matrix` to connect to hosts.
 *   **Inside CT-1111 (Sandbox)**: Zero restrictions. AI is absolute master.
 *   **Outside CT-1111 (Remote Nodes)**: 
     *   *State-Modifying Actions*: Strictly controlled by the user. Requires explicit validation.
@@ -41,7 +41,7 @@
 *   **CPU**: Intel(R) Core(TM) Ultra 7 155H (Meteor Lake, 16 Cores / 22 Threads)
 *   **RAM**: 16 GB (15.37 GB usable, remainder for Intel Arc iGPU)
 *   **OS**: Windows 11 Home (Famille)
-*   **Local IP**: `192.168.1.10` (ULA: `fddf::10`)
+*   **Local IP**: ULA: `fddf::10`
 *   **Security**: Windows Defender Firewall active.
 *   **Integrations**: 1Password SSH Agent integration via named pipe. PowerShell profile shortcuts configured.
 
@@ -50,7 +50,7 @@
 *   **CPU**: 13th Gen Intel(R) Core(TM) i9-13900H (14 Cores / 20 Threads)
 *   **RAM**: 32 GB
 *   **OS**: Proxmox VE 9.2.3 (Kernel `7.0.12-1-pve`)
-*   **Local IP**: `192.168.1.100` (ULA: `fddf::1`)
+*   **Local IP**: ULA: `fddf::1`
 *   **Networking**: Bridge `vmbr0` on `nic0` (2.5GbE RJ45, isolated from Intel vPro/AMT management on `nic1`). Direct-attach 10G SFP+ storage link on `nic2` (IP: `fddd::1/64`).
 *   **Storage Role**: Acts as the sole iSCSI Initiator (`iqn.2024-01.local.homelab:matrix-initiator`). Manages all filesystems (EXT4, ZFS, MergerFS) locally over the network.
 *   **Active Virtualization**:
@@ -76,7 +76,7 @@
 *   **HBA Controller**: Broadcom / LSI SAS2308 PCI-Express Fusion-MPT SAS-2 (IT Mode)
 *   **Chassis/Enclosure**: Jonsbo N5 NAS/Storage Chassis (Integrated Hot-Swap Backplane)
 *   **OS**: Proxmox VE 9.2.3 (Debian GNU/Linux 13 Trixie, kernel `7.0.12-1-pve`)
-*   **Local IP**: `192.168.1.200` (ULA: `fddf::2`)
+*   **Local IP**: ULA: `fddf::2`
 *   **Onboard NICs**: Onboard Realtek RTL8126 5GbE Controller (`nic0`, PVE Bridge `vmbr0`), 10G 10Gtek PCIe Card (`nic2`, IP: `fddd::2/64` for direct 10G storage link), Qualcomm WCN785x Wi-Fi 7 Controller (`wlp7s0`, disabled)
 *   **Storage Pool**:
     *   PVE OS & Datastore: 1 TB NVMe (LVM-Thin `local`/`local-lvm` on `nvme0n1` [Samsung 980 Pro])
@@ -93,8 +93,7 @@
 *   **GPU**: Intel Corporation HD Graphics 620 (rev 02)
 *   **RAM**: 8 GB DDR4
 *   **OS**: Debian GNU/Linux 13 (trixie, version 13.6, Kernel `6.12.95+deb13-amd64`)
-*   **Local IP**: ULA: `fddf::3` (IPv4: `192.168.1.253`)
-*   **Status**: Serves as a headless controller using `moonlight-qt` to stream the high-performance Debian Trixie VM (`fddf::2222`) on skynet. Optimized with BBR congestion control, CPU governor running on default dynamic `powersave` (preventing fan noise while idling), and Wi-Fi power saving disabled.
+*   **Local IP**: ULA: `fddf::3` 
 
 
 ---
