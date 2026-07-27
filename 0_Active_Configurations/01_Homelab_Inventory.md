@@ -34,6 +34,8 @@
   - **200 (Debian-Server-Template):** Stopped, 2 GiB RAM, 32G Disk
   - **400 (Windows-Template-Desktop):** Stopped, 16 GiB RAM, 100G Disk
   - **500 (Windows-Template-Server):** Stopped, 16 GiB RAM, 100G Disk
+  - **2222 (Fedora-Workstation):** 16 GiB RAM, 12 vCPUs, 52G OS Disk (`/dev/sda2`), 1000G ZFS over iSCSI Home Disk (`/dev/sdb1`), IP: 192.168.1.22 (ULA: `fddf::2222`)
+
 - **Software:**
   - **OS:** Debian GNU/Linux 13 (trixie)
   - **Proxmox VE:** 9.2.3 (running kernel: 7.0.12-1-pve)

@@ -67,6 +67,8 @@
     *   **VM 200 (Debian-Server-Template)**: Stopped.
     *   **VM 400 (Windows-Template-Desktop)**: Stopped.
     *   **VM 500 (Windows-Template-Server)**: Stopped.
+    *   **VM 2222 (Fedora-Workstation)**: 16GB RAM, 12 vCPUs. ULA `fddf::2222` (IPv4 `192.168.1.22`). 52GB system root (`/dev/sda2`), 1000GB ZFS over iSCSI home disk (`/dev/sdb1`). Accessible via `ssh AI@fddf::2222`.
+
 
 #### 📦 skynet - Storage & Backup Backend (Upgraded Custom Tower)
 *   **Form Factor**: Custom ATX Mid-Tower Storage Server
