@@ -34,6 +34,7 @@ To ensure the architecture survives reboots and ISP prefix changes without manua
 *   **Network Interfaces:** Physical hosts use `inet6 manual` to allow kernel SLAAC for public outbound traffic while persisting static ULA assignments and routes.
 *   **Container IP Persistence:** A systemd service (`secondary-ipv6.service`) runs on boot in CT 111 to re-apply the Secondary GUA and Internal ULA, followed by a post-start ping to the Freebox LLA to refresh the router's hardware neighbor cache.
 *   **DDNS Auto-Healing (`2update-vpn-dns.sh`):** A script runs hourly via a systemd timer on CT 111. It calculates the correct Secondary Prefix dynamically by performing hex math on its primary SLAAC address (adding 1 to the 4th block), applies the IP to `eth0`, and updates the `vpn.example-homelab.com` AAAA record via the Cloudflare API.
+*   **WireGuard Auto-Healing Watchdog (`wg-watchdog.timer`):** A systemd timer running every 3 minutes in CT 111 executes `/usr/local/bin/wireguard-watchdog.sh`. It performs a passive check on the UDP 11111 socket (`ss -u -l -n`). If a router RA/NDP refresh causes the kernel UDP socket to become stale, the watchdog automatically restarts `wg-quick@wg0` and pings the Freebox LLA (`fe80::3a07:16ff:fe21:c7c4%eth0`) to refresh the hardware routing table without dropping active sessions.
 
 ---
 
