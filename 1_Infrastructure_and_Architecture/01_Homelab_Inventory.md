@@ -64,7 +64,7 @@
   - **iSCSI LIO Target (`targetcli`):** `iqn.2024-01.local.homelab:skynet-target` exporting `sda` and `sdd` LUNs over 10G portal `[fddd::2]:3260`.
   - **Proxmox Backup Server:** Datastore `Backups` listening natively on `[fddd::2]:8007` (matrix connects via 10G link)
 - **VMs / Containers:**
-  - **CT 4444 (LXC-Workstation - 192.168.1.44 / fddf::4444):** High-performance bare-metal Fedora 44 LXC container with direct AMD Ryzen 7 9700X RDNA3 iGPU DRM passthrough (`/dev/dri/card0`, `/dev/dri/renderD128`) and `/dev/uinput` input passthrough. Runs minimal KDE Plasma 6 Wayland & Sunshine desktop streaming host at 2560x1440@240Hz. Configured with 16GB RAM, 32GB NVMe OS disk, 1000GB ZFS `/home` mount (`Local-pool:subvol-4444-disk-0`), static IPv4 `192.168.1.44`, static IPv6 ULA `fddf::4444`, GUA `2a01:e0a:d6f:29e0::4444`, Freebox LLA Gateway `fe80::3a07:16ff:fe21:c7c4`, and AdGuard Home DNS (`192.168.1.115`, `fddf::115`).
+  - **CT 4444 (LXC-Workstation - 192.168.1.44 / fddf::4444):** High-performance bare-metal Fedora 44 LXC container with direct AMD Ryzen 7 9700X RDNA3 iGPU DRM passthrough (`/dev/dri/card0`, `/dev/dri/renderD128`) and `/dev/uinput` input passthrough. Runs minimal KDE Plasma 6 Wayland & Sunshine desktop streaming host at 2560x1440@240Hz. Configured with 16GB RAM, 32GB NVMe OS disk, 1000GB ZFS `/home` mount (`Local-pool:subvol-4444-disk-0`), static IPv4 `192.168.1.44`, static IPv6 ULA `fddf::4444`, GUA `2a01:e0a:d6f:29e0::4444`, WireGuard VPN route `fdfd::/112 via fddf::111`, Freebox LLA Gateway `fe80::3a07:16ff:fe21:c7c4`, and AdGuard Home DNS (`192.168.1.115`, `fddf::115`).
 - **Software:**
   - **OS:** Debian GNU/Linux 13 (trixie, Debian 13.5)
   - **Proxmox VE:** 9.2.3 (running kernel: 7.0.12-1-pve)
