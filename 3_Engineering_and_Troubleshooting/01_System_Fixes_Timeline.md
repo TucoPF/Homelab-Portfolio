@@ -1,46 +1,5 @@
 # System Fixes Log
 
-## Date: 25 July 2026
-
-### Issue: Proxmox Host Boot Delay & Transition to Native ZFS over iSCSI SAN (`Remote-pool` / `Local-pool`)
-* **Symptoms:** Rebooting `matrix` caused a 4-minute boot hang at `open-iscsi.service` when `skynet` was offline or slow to initialize. Additionally, the NFS SAN share (`/zfs-pool/pve-nfs`) was unused and inefficient for dynamic VM ZVOL disk provisioning.
-* **Diagnosis:** 
-  1. `systemd-analyze blame` identified `open-iscsi.service` spending 4 minutes 15 seconds attempting auto-logins to `fddd::2:3260` during early boot because the target record in `/var/lib/iscsi/nodes/` was set to `node.startup = automatic` with a 120-retry limit.
-  2. `/etc/fstab` iSCSI block mounts for `disk1`/`disk2` lacked fast device timeouts (`x-systemd.device-timeout=5s`), forcing `systemd` to wait up to 90 seconds per device.
-  3. Renaming local storage IDs broke LXC container rootfs/subvol bindings on `skynet` because container configs in `/etc/pve/nodes/skynet/lxc/*.conf` hardcoded the storage ID prefix.
-* **Fix Applied:** 
-  1. Decommissioned unused NFS storage entry (`nfs`) from Proxmox Datacenter.
-  2. Configured Proxmox native ZFS over iSCSI (`iscsiprovider LIO`) between `matrix` (`Remote-pool`) and `skynet` (`Local-pool`).
-  3. Updated persistent iSCSI node database on `matrix` (`/var/lib/iscsi/nodes/iqn.2024-01.local.homelab:skynet-target/fddd::2,3260,1/default`) to maintain `node.startup = automatic` for Media drives while setting fast timeouts (`login_timeout = 3`, `initial_login_retry_max = 2`), enabling automatic block device attachment on boot without blocking host startup if network links lag.
-  4. Added `x-systemd.device-timeout=5s` to `/etc/fstab` for `disk1` and `disk2` on `matrix`, and removed invalid `,nofail` parameters from MergerFS FUSE mount options.
-  5. Updated LXC volume references (`1111`, `131`, `132`) on `skynet` to `Local-pool:`.
-* **Implementation:**
-  ```bash
-  # Tune persistent iSCSI node database on matrix for fast auto-login
-  sudo iscsiadm -m node -T iqn.2024-01.local.homelab:skynet-target -o update -n node.startup -v automatic
-  sudo iscsiadm -m node -T iqn.2024-01.local.homelab:skynet-target -o update -n node.session.initial_login_retry_max -v 2
-  sudo iscsiadm -m node -T iqn.2024-01.local.homelab:skynet-target -o update -n node.conn[0].timeo.login_timeout -v 3
-  ```
-
-## Date: 23 July 2026
-
-### Issue: `skynet` 5GbE Network Link Loss after Proxmox Kernel Upgrade
-* **Symptoms:** After rebooting `skynet` onto PVE kernel `7.0.14-6-pve`, the primary ULA interface `fddf::2` (`nic0` / `vmbr0`) became completely unreachable. The 10G direct SAN link `fddd::2` (`vmbr2`) remained active and reachable from `matrix`.
-* **Diagnosis:** The Realtek RTL8126 5GbE controller required the `realtek-r8126-dkms` module (version 10.017.00) while the native kernel driver `r8169` was blacklisted in `/etc/modprobe.d/blacklist.conf`. During the kernel upgrade to `7.0.14-6-pve`, DKMS failed to rebuild the module because `proxmox-headers` for the new kernel were missing, leaving `nic0` without a driver.
-* **Fix Applied:** 
-  1. Routed temporary internet access from `matrix` (`fddd::1`) to `skynet` (`fddd::2`).
-  2. Installed kernel headers (`proxmox-headers-7.0.14-6-pve`) and `proxmox-default-headers` to automate header installation for all future kernel updates.
-  3. Rebuilt and installed the `r8126` module via `dkms autoinstall`.
-  4. Added `r8126` to `/etc/modules` for explicit boot loading.
-  5. Kept the fallback 10G IPv6 default route via `matrix` (`fddd::1`) for resilience.
-* **Implementation:**
-  ```bash
-  sudo apt-get update && sudo apt-get install -y proxmox-default-headers proxmox-headers-$(uname -r)
-  sudo dkms autoinstall -k $(uname -r)
-  echo "r8126" | sudo tee -a /etc/modules
-  sudo ip link set dev nic0 master vmbr0 && sudo ip link set dev nic0 up
-  ```
-
 ## Date: 10 March 2026
 
 ### Issue 1: Unexpected Idle Reboots
@@ -114,6 +73,7 @@
   1. **Firewall Fix:** Updated `/etc/nftables.conf` to explicitly allow traffic from `docker0` and `br-*` to access essential Web UI ports and Scanopy ports (`60072`, `60073`), while keeping SSH (`22`) strictly locked to physical/Tailscale interfaces.
   2. **Configuration Update:** Updated the Server's `docker-compose.yml` to set `SCANOPY_PUBLIC_URL` to `http://192.168.1.100:60072`.
   3. **Daemon Initialization:** Removed the daemon service from docker-compose, stopped the existing container, and manually ran the `docker run` command provided by the Web GUI (ensuring `SCANOPY_SERVER_URL` was set to the Pi's IP, `192.168.1.100`). This injected the correct `SCANOPY_DAEMON_API_KEY` and `SCANOPY_NETWORK_ID`, successfully establishing the connection and starting network discovery.
+
 ## Date: 17 March 2026
 
 ### Issue 8: Broken Default Shell on matrix (Minisforum)
@@ -258,8 +218,6 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
     1. Installed the missing packages: `sudo pacman -S rygel gnome-user-share`.
     2. Verified that both services remain `inactive (dead)` by default, consuming zero resources until manually enabled via GNOME Settings.
 
-
-
 ## Date: 09 April 2026
 
 ### Issue 17: Wi-Fi Roaming Drops and SSID Duplication
@@ -305,7 +263,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 12 April 2026
 
-### Issue 9: Qualcomm WCN785x (ath12k) Wi-Fi 7 Instability
+### Issue 21: Qualcomm WCN785x (ath12k) Wi-Fi 7 Instability
 * **Symptoms:** 'failed to pull fw stats: -71' and 'qmi dma allocation failed' in dmesg. 4-way handshake timeouts during roaming.
 * **Diagnosis:** Missing CMA memory reservation (driver failed to allocate 7MB contiguous blocks) and aggressive PCIe ASPM power management timing issues.
 * **Fix Applied:** Reserved 256M of CMA memory and removed the 'powersave' ASPM policy.
@@ -317,7 +275,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 23 April 2026
 
-### Issue 21: skynet Backplane Noise Investigation and Safe Shutdown
+### Issue 22: skynet Backplane Noise Investigation and Safe Shutdown
 * **Symptoms:** Strange noise originating from the Icybox IB-544SSK backplane on the `skynet` server.
 * **Diagnosis:** Ran SMART short tests on all 4 SAS drives (`sda`, `sdb`, `sdc`, `sdd`). Tests passed with no errors. Spun down drives `sdb`, `sdc`, `sdd` and finally `sda` using `sg_start --stop`, confirming the noise was not the drives but likely the backplane fan.
 * **Findings:** `sda` (Serial: ZA29BN5M0000C9091B6V) reported 3 reassigned blocks in SMART health status. This needs to be monitored to see if the number grows. The other three drives reported 0 reassigned blocks.
@@ -336,7 +294,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 25 April 2026
 
-### Issue 22: Qualcomm WCN785x (ath12k) Memory Corruption & Kernel Panics
+### Issue 23: Qualcomm WCN785x (ath12k) Memory Corruption & Kernel Panics
 * **Symptoms:** Hard system lockups/kernel panics (e.g., `__kmalloc` panic during `ip6_finish_output`) when the laptop wakes from sleep or under network load. `dmesg` shows constant `failed to pull fw stats: -71` and `qmi dma allocation failed`. Also experienced network drops (CIFS timeouts) due to the Wi-Fi radio antenna sleeping.
 * **Diagnosis:** 
   1. The Meteor Lake motherboard's aggressive PCIe Active State Power Management (ASPM) was putting the Wi-Fi 7 card's PCIe lanes into micro-sleep states (L0s/L1). The `ath12k` driver timed out trying to wake the link to allocate memory, resulting in timeouts and eventual kernel memory pool corruption. (Previous global IOMMU passthrough `iommu=pt` was redundant as the kernel already defaulted to identity mapping).
@@ -357,7 +315,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 23 May 2026
 
-### Issue 23: LXC 103 (Arr-Stack-103) Container OS Disk Depletion (100% Full)
+### Issue 24: LXC 103 (Arr-Stack-103) Container OS Disk Depletion (100% Full)
 * **Symptoms:** The Arr stack services (Radarr, Sonarr, Bazarr, Prowlarr, Seerr) were facing impending OS disk storage exhaustion, with the LXC 103 root filesystem (`/`) reporting 94% utilization (14 GB used of 16 GB).
 * **Diagnosis:** Since docker-compose updates pull new images without garbage-collecting the previous layers, `containerd` had accumulated 12 GB of image and layer storage in `/var/lib/containerd`. Specifically, 21 dangling, untagged images occupied 9.12 GB of reclaimable space.
 * **Fix Applied:** Purged dangling/unused Docker images and configured a persistent systemd timer inside LXC 103 to run a weekly automated prune.
@@ -393,7 +351,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      ```
      Verified that the timer triggers `docker-prune.service` successfully and is active (`waiting` status).
 
-### Issue 24: Redundant Virtual Interfaces and Subnets on LXC 103 (Arr-Stack-103)
+### Issue 25: Redundant Virtual Interfaces and Subnets on LXC 103 (Arr-Stack-103)
 * **Date:** 23 May 2026
 * **Symptoms:** The LXC 103 container was cluttered with multiple redundant virtual ethernet interfaces (`veth*`), docker-compose custom bridges (`br-*`), and the default `docker0` bridge network interface, adding unnecessary network hops and complexity.
 * **Diagnosis:** Since all Arr stack containers were transitioned to `network_mode: host` to simplify inter-container networking and lower CPU/IO overhead, Docker's virtual bridges and the default `docker0` interface were completely unused. Additionally, a known legacy limitation in the Servarr HTTP engine (`ManagedHttpDispatcher`) explicitly disables IPv6 outgoing sockets whenever a working IPv4 interface is active, meaning the containers must continue using local IPv4 (`192.168.1.102:6789`) to communicate with NZBGet.
@@ -412,7 +370,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      ```
   4. **Verification:** Verified `ip addr` inside LXC 103. The `docker0` bridge has been completely removed. The container now has a hardened, clean dual-stack network with only `lo` and `eth0` active, while all containers run flawlessly in Host Network Mode.
 
-### Issue 25: Delayed Media Discovery in Jellyfin (LXC 101) Post-Import
+### Issue 26: Delayed Media Discovery in Jellyfin (LXC 101) Post-Import
 * **Date:** 23 May 2026
 * **Symptoms:** Newly imported movies (completed from Radarr) took an excessively long time (several minutes) to show up in the Jellyfin client UI.
 * **Diagnosis:** Jellyfin is configured with a default `<LibraryMonitorDelay>` of `60` seconds inside `/etc/jellyfin/system.xml`. This stabilization timer is designed to wait for files to finish writing (copying) over network/disk. However, because this setup utilizes the **"Fusion Trick"** NVMe bind mount, file imports are instantaneous atomic hardlinks requiring zero write time, making the 60-second delay completely redundant.
@@ -428,7 +386,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      ```
   3. **Verification:** Verified the configuration change and confirmed that library refreshes trigger almost instantly (3-second delay) upon receiving Radarr's API updates.
 
-### Issue 26: Incorrect Time and Log Timestamps Across LXC and Docker Containers
+### Issue 27: Incorrect Time and Log Timestamps Across LXC and Docker Containers
 * **Date:** 23 May 2026
 * **Symptoms:** Log entries and system times inside the LXC containers and Docker containers (Jellyfin, NZBGet, Radarr, Sonarr, etc.) were displaying in UTC (or other incorrect timezones), making log correlation and troubleshooting difficult.
 * **Diagnosis:** Proxmox LXC containers share the host kernel clock. While the physical time is correct, the container system configuration defaults to the `UTC` timezone. Additionally, the Docker containers in LXC 103 had explicit `TZ=Etc/UTC` (and `TZ=Asia/Tashkent` for Seerr) environment variables hardcoded in their `docker-compose.yml`, overriding system-level timezone settings.
@@ -441,7 +399,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 28 May 2026
 
-### Issue 27: skynet Transition from Proxmox Backup Server (PBS) to Native Proxmox Virtual Environment (PVE)
+### Issue 28: skynet Transition from Proxmox Backup Server (PBS) to Native Proxmox Virtual Environment (PVE)
 * **Symptoms:** skynet was running a legacy dedicated PBS setup. The user wanted to transition skynet into a fully native Proxmox Virtual Environment (PVE 9) compute/storage node while preserving the physical MergerFS media pool and ZFS cloud pool intact.
 * **Diagnosis:** Upgrading/converting required a clean PVE installation on the primary OS NVMe drive (`nvme0n1`), followed by restoring full homelab custom configurations (1Password passwordless SSH-agent sudo authorization, MergerFS tiering, custom shell profiles, NFS exports, and the nightly storage mover script).
 * **Fix Applied:** Formatted and installed PVE 9 natively on the NVMe system drive, safely preserved and imported ZFS and MergerFS pools, restored PAM SSH-agent auth permissions, and updated all system and shell profiles.
@@ -454,7 +412,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 29 May 2026
 
-### Issue 28: Idle Clicking/Ticking Noise on skynet SAS Pool Drive (/dev/sda)
+### Issue 29: Idle Clicking/Ticking Noise on skynet SAS Pool Drive (/dev/sda)
 * **Symptoms:** An audible, periodic "clickety" or ticking sound was coming from the Jonsbo N5 chassis when the storage pool was idle, isolated specifically to `/dev/sda`. Later, it was observed that when waking up the pool, `/dev/sda` would perform a clicking/ticking calibration routine for approximately 1 minute before becoming quiet.
 * **Diagnosis:** Checked the Extended Power Conditions (EPC) using `sdparm`. Originally, `/dev/sda` had `Idle_A` and `Idle_B` disabled (`0`), while the other drives had them enabled (`1`). Aligning `sda` to match the others resolved the initial idle clicking. However, on wake-up from the deep `Idle_B` state, `/dev/sda` still performed a 1-minute calibration. This is because `/dev/sda` is the only drive in the pool with remapped sectors in its Grown Defect List (G-List: 3 sectors, healthy and stable). Upon waking from deep idle, the drive firmware runs a Thermal Fly-height Control (TFC) and track-alignment sweep to verify physical boundaries for these remapped blocks. The other drives have 0 grown defects and therefore woke up silently.
 * **Reversion / Final Resolution:** We attempted to disable `Idle_B` on all drives to force them into `Idle_A` (heads unparked), hoping to bypass the wake-up calibration noise. However, this forced the Seagate Exos firmware to keep the heads loaded in active tracking mode, which triggered rapid, continuous seeking cliquetis (multiple times per second) due to Preventive Wear Leveling (PWL) and active track alignment. Since the pool is only active once a day (at 3:00 AM for the nightly MergerFS mover), this high-frequency noise was unacceptable. All drives were reverted back to their original factory defaults (`sda` at `IDLE_A=0`/`IDLE_B=0`, and `sdb`/`sdc`/`sdd` at `IDLE_A=1`/`IDLE_B=1`), restoring silence when idle.
@@ -474,7 +432,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 30 May 2026
 
-### Issue 29: Traefik Boot-Time Failure and CrowdSec LAPI Dependency Race
+### Issue 30: Traefik Boot-Time Failure and CrowdSec LAPI Dependency Race
 * **Symptoms:** Traefik always fails on reboot because it cannot download plugins (network/DNS not ready) or connect to CrowdSec LAPI. Even with `Restart=on-failure` in its systemd service, it doesn't restart. The user must manually restart CrowdSec first, then restart Traefik.
 * **Diagnosis:** 
     1. **Disabled Plugins on Boot:** During startup, Traefik attempts to download its plugins (`crowdsec-bouncer`, `geoblock`) from `plugins.traefik.io`. Because the external network or DNS (AdGuard-115) is not fully stable, the download fails.
@@ -492,7 +450,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 3 June 2026
 
-### Issue 30: Proxmox "Backup" Storage Activation Failure (Multi-Node Mount Expectation)
+### Issue 31: Proxmox "Backup" Storage Activation Failure (Multi-Node Mount Expectation)
 * **Symptoms:** Trying to activate a newly configured SSD (repurposed 1TB NVMe) as a directory storage (`Backup`) on both Proxmox nodes (`skynet` and `matrix`) failed on `matrix` with `TASK ERROR: could not activate storage 'Backup': unable to activate storage 'Backup' - directory is expected to be a mount point but is not mounted: '/mnt/pve/Backup'`. The Backup storage remained inactive in the WebGUI.
 * **Diagnosis:** The storage was defined in `/etc/pve/storage.cfg` with `is_mountpoint 1` and restricted to `nodes skynet,matrix`. Because the physical SSD is plugged into `skynet`, Proxmox successfully mounted it there via systemd (`mnt-pve-Backup.mount`), but the directory `/mnt/pve/Backup` on `matrix` had no underlying mount, causing PVE's mount check to fail.
 * **Fix Applied:** Exported `/mnt/pve/Backup` from `skynet` over NFS and mounted it on `matrix` via `/etc/fstab` using systemd automount. This ensures `/mnt/pve/Backup` is an active mount point on both nodes, resolving the Proxmox validation checks.
@@ -506,7 +464,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 07 June 2026
 
-### Issue 31: Homelab Node Automatic Security Updates (unattended-upgrades)
+### Issue 32: Homelab Node Automatic Security Updates (unattended-upgrades)
 * **Symptoms:** Homelab nodes (`matrix` and `skynet`) lacked an automated patching mechanism, requiring manual intervention to update base OS libraries against security vulnerabilities.
 * **Diagnosis:** Debian packages can be automated using `unattended-upgrades`. However, Proxmox-specific packages (running in a no-subscription repository) contain hypervisor code (PVE manager, QEMU, ZFS, kernels) which can cause active service restarts, storage disruptions, or require unscheduled reboots. Standard settings also trigger DBus or power/battery check warnings when systemd is polled.
 * **Fix Applied:** Configured `unattended-upgrades` to automatically install Debian Security, Base, and Stable updates daily, while explicitly pinning Proxmox repositories to a negative priority to exclude them from automated updates. Resolved system warnings by installing auxiliary packages (`python3-gi`, `powermgmt-base`) and configured automated cleanup of old kernels and unused packages while disabling automatic reboots.
@@ -519,7 +477,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 07 June 2026
 
-### Issue 32: Redundant SSD Trim Wear & Uncoordinated Cache Mover
+### Issue 33: Redundant SSD Trim Wear & Uncoordinated Cache Mover
 * **Symptoms:** The daily `fstrim-cache.timer` triggered a trim on `/mnt/matrix-cache` at 04:00 AM regardless of whether any data had been migrated, leading to redundant write/erase wear on the 2TB NVMe SSD.
 * **Diagnosis:** Trimming should follow file deletion immediately, but the `fusion_mover.sh` script runs as the unprivileged `tuco` user and cannot execute root-level commands like `fstrim`.
 * **Fix Applied:** Modified the mover script to generate a RAM-backed flag (`/dev/shm/fusion_mover_moved`) only when data is moved. Updated the systemd service to intercept this flag and trigger `fstrim-cache.service` as root using systemd's privilege override prefix (`+`), and removed the redundant standalone timer.
@@ -531,7 +489,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 09 June 2026
 
-### Issue 33: Proxmox Cluster Crash (Systemd Boot Loop)
+### Issue 34: Proxmox Cluster Crash (Systemd Boot Loop)
 * **Symptoms:** The Proxmox cluster completely failed to form upon reboot. matrix reported `Cannot initialize CMAP service`, `corosync.service` was completely dead, and `pvestatd` locked the `/etc/pve` filesystem. skynet remained online but lost quorum.
 * **Diagnosis:** A legacy systemd override (`/etc/systemd/system/zfs-import-cache.service.d/override.conf`) was forcing ZFS to wait for `open-iscsi.service`. This created an unbreakable systemd dependency loop: `zfs` -> `iscsi` -> `network-online.target` -> `networking` -> `local-fs` -> `zfs`. To break the loop, systemd's non-deterministic resolver arbitrarily killed the `network-online.target` startup job, causing the network-dependent `corosync.service` to abort.
 * **Fix Applied:** Dismantled the dependency loop by deleting the rogue ZFS override, and established a completely resilient MergerFS mount topology using standard `fstab` ordering. Re-established the LXC container shutdown hook (`pve-guests`) to target the correct iSCSI fusion mount path.
@@ -542,7 +500,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 16 June 2026
 
-### Issue 34: Windows 1Password SSH Agent Forwarding & Debian VM Setup
+### Issue 35: Windows 1Password SSH Agent Forwarding & Debian VM Setup
 * **Symptoms:** 
   1. The Windows OpenSSH client failed to connect to the 1Password SSH Agent, logging `get_agent_identities: ssh_get_authentication_socket: No such file or directory` and prompting for passwords on matrix and skynet.
   2. The newly created Debian VM (VM 1000, `Laptop` on skynet) was unreachable via SSH, lacked an IPv6 ULA, and did not support passwordless `sudo` via forwarded agent.
@@ -572,7 +530,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 12 July 2026
 
-### Issue 35: LSI HBA Option ROM Boot Freeze & Linux Flash Bypass
+### Issue 36: LSI HBA Option ROM Boot Freeze & Linux Flash Bypass
 * **Symptoms:** Motherboard POST hang (MSI debug code 73/92) and 2m30s boot delay caused by LSI SAS2308 HBA Option ROM (BIOS/UEFI BSD) on modern AMD AM5 (MSI X870E) platform.
 * **Diagnosis:** 
     1. UEFI Shell v1.0 (UDK2014) is incompatible with newer BIOS GOP and freezes on boot (blinking cursor).
@@ -588,7 +546,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
     2. **Execution & Erase:** Ran `sudo /tmp/lsiutil` and selected the MPT Port. Selected **Option 4** (*Download/erase BIOS and/or FCode*). Pressed **Enter** on the filename prompt, and answered **No** to preserving the x86 BIOS and EFI BIOS images. Confirmed with **Yes** to execute the erase.
     3. **Reset:** Selected **Option 99** to reset the port and quit the utility. Verified Option ROMs were wiped using `sudo sas2flash -list` (showing `BIOS Version: N/A` and `UEFI BSD Version: N/A`).
 
-### Issue 36: matrix iSCSI Boot Race Condition during Cold Boot
+### Issue 37: matrix iSCSI Boot Race Condition during Cold Boot
 * **Symptoms:** matrix (Mini-PC) boots significantly faster than skynet (ATX server backend) during a cold start, causing `open-iscsi` to exhaust its initial login retries too early, leading to ZFS/MergerFS mount failures.
 * **Diagnosis:** The default timeout of `open-iscsi` was too short to wait for the storage server backend to finish its POST and start the iSCSI portal.
 * **Fix Applied:** Increased the retry count in `/etc/iscsi/iscsid.conf` to extend the connection retry window during boot.
@@ -597,7 +555,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
     2. Increased `node.session.initial_login_retry_max` to `120` (extending the retry window to ~10 minutes).
     3. Restarted `iscsid` and verified the retry loop behavior during a cold boot test.
 
-### Issue 37: skynet 10G SFP+ Interface and Storage Network Binding
+### Issue 38: skynet 10G SFP+ Interface and Storage Network Binding
 * **Symptoms:** Storage replication and replication tasks between matrix and skynet suffered from performance drops and latency due to binding to the wrong physical port.
 * **Diagnosis:** The IPv6 static storage configuration (`fddd::/64` direct link) was bound to `nic1` on skynet instead of `nic2`, which is the physical 10G SFP+ port.
 * **Fix Applied:** Adjusted the network configuration of skynet to bind the `fddd::2/64` address to the correct physical adapter interface (`nic2`).
@@ -606,7 +564,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
     2. Swapped the static IPv6 configurations between `nic1` and `nic2` to align with physical wiring.
     3. Reloaded networking using `systemctl restart networking` and verified direct 10G link bandwidth using `iperf3`.
 
-### Issue 38: Jellyfin Media Player (Windows) Direct Play Buffering and Latency Starvation
+### Issue 39: Jellyfin Media Player (Windows) Direct Play Buffering and Latency Starvation
 * **Symptoms:** High-bitrate 4K Direct Play micro-stutters and buffering in Jellyfin Media Player (Windows) on the control node.
 * **Diagnosis:** Latency starvation caused by MergerFS `dropcacheonclose=true` combined with `mpv`'s default tiny HTTP chunk requests.
 * **Fix Applied:** Configured aggressive local caching parameters inside the client's `mpv.conf` to buffer media files ahead of time.
@@ -619,7 +577,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
        demuxer-readahead-secs=120
        ```
 
-### Issue 39: Proxmox Memory Units CLI & UI Input Workarounds
+### Issue 40: Proxmox Memory Units CLI & UI Input Workarounds
 * **Symptoms:** CLI friction due to Proxmox displaying and requiring memory inputs in MiB instead of GB.
 * **Diagnosis:** PVE does not natively support changing the memory display/input unit due to ExtJS UI and QEMU/kernel alignment requirements.
 * **Fix Applied:** Created a shell helper alias for CLI computations and a JavaScript bookmarklet for GUI input conversion.
@@ -627,7 +585,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
     1. **CLI Alias:** Added `alias mib='function _mib() { echo $(($1 * 1024)); }; _mib'` to shell profile.
     2. **GUI Bookmarklet:** Created a bookmarklet that automatically reads the active memory input field, converts the GB value to MiB, and updates the ExtJS state dynamically.
 
-### Issue 40: NFS I/O Failures and Large File Transfer Crashes
+### Issue 41: NFS I/O Failures and Large File Transfer Crashes
 * **Symptoms:** Large file transfers (e.g. 80GB Remuxes) crashed or stalled over the NFS network mount.
 * **Diagnosis:** Network timeouts and packet loss under load caused the NFS mount to lock up due to standard soft mount timeouts.
 * **Fix Applied:** Transitioned matrix's NFS mount parameters to use hard mounts with customized timeouts.
@@ -635,7 +593,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
     1. Edited `/etc/fstab` on matrix.
     2. Updated mount parameters to: `hard,timeo=600,retrans=5`.
 
-### Issue 41: Purifying Unprivileged Proxmox Containers (Permission Restoration)
+### Issue 42: Purifying Unprivileged Proxmox Containers (Permission Restoration)
 * **Symptoms:** Unprivileged containers (e.g. NZBGet) suffered from write failures and permission errors after removing custom `lxc.idmap` shifting.
 * **Diagnosis:** Existing files inside the container's rootfs were owned by the shifting UID `1000` instead of the base `100000` container namespace.
 * **Fix Applied:** Shifted container internal files back to the base namespace mapping from the host.
@@ -643,7 +601,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
     1. Obtained the container's PID from the host.
     2. Ran: `find /proc/<PID>/root/ -xdev \( -uid 1000 -o -gid 1000 \) -exec chown -h 101000:101000 {} +` from the Proxmox host.
 
-### Issue 42: Terminal Keyboard Shortcuts and Escape Sequences Inconsistencies (CSI u Standard)
+### Issue 43: Terminal Keyboard Shortcuts and Escape Sequences Inconsistencies (CSI u Standard)
 * **Symptoms:** Mapped shortcut keys like `Ctrl+Backspace`, `Ctrl+Delete`, `Alt+Backspace`, and `Alt+Delete` behaved inconsistently. In container environments entered via `pct enter`, `Shift+PageUp/Down` printed raw `2~` sequences.
 * **Diagnosis:** Terminal emulators and shells had mismatching key translations. Specifically, `pct enter` overrides `TERM` to `linux`, forcing an obsolete console driver.
 * **Fix Applied:** Deployed the **CSI u** terminal protocol standard and shifted container access from `pct enter` to native `lxc-attach` to preserve terminal capabilities (`TERM=xterm-256color`).
@@ -654,7 +612,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
     4. **Zsh Support:** Aligned the universal Zsh template in `03_Terminal_Environment_Setup.md` with matrix actuals (adding the `temps` alias, removing deprecated IP aliases) and deployed the updated `.zshrc` containing CSI u Zsh keybindings to root and `tuco` on both `matrix` and `skynet`.
     5. **Documentation:** Documented full technical architecture in [07_CSIu_Terminal_Standardization.md](file:///root/Homelab-Portfolio/3_Engineering_and_Troubleshooting/07_CSIu_Terminal_Standardization.md).
 
-### Issue 43: Zsh Keypad Application Mode Scroll Lock & Clear Keybinding Optimization
+### Issue 44: Zsh Keypad Application Mode Scroll Lock & Clear Keybinding Optimization
 *   **Symptoms:** `Shift+PageUp/Down` scrollback buffer navigation printed raw `;2~` sequences in Zsh instead of scrolling. The `clear` screen keybinding (`Alt+x`) was ergonomically suboptimal.
 *   **Diagnosis:** Zsh's keypad application mode hooks (`smkx` / `rmkx`) intercept navigation keys and forward them to ZLE instead of allowing the local terminal emulator to scroll.
 *   **Fix Applied:** Disabled Zsh keypad application mode by removing `smkx` / `rmkx` hooks and switching to static keyboard mappings (`Home`/`End`/`Delete`). Updated the `clear` screen keybinding from `Alt+x` to `Alt+<` and deployed it across hosts (Zsh) and containers (Bash).
@@ -667,7 +625,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 15 July 2026
 
-### Issue 44: IPv6 NDP Discovery Failure and Internet Cut with Proxmox Firewall
+### Issue 45: IPv6 NDP Discovery Failure and Internet Cut with Proxmox Firewall
 * **Symptoms:** 
   1. IPv6 ping from the Pi 4 (Wi-Fi) to Matrix containers/VMs (e.g. `AI-1111`) returned `Destination unreachable: Address unreachable`.
   2. Activating multicast snooping on `vmbr0` completely cut off IPv6 internet access and local routing for all containers.
@@ -691,7 +649,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      Applied immediately: `sudo ip link set dev nic0 type bridge_slave mcast_router 2 && echo 1 | sudo tee /sys/class/net/vmbr0/bridge/multicast_querier && echo 1 | sudo tee /sys/class/net/vmbr0/bridge/multicast_snooping`.
   3. **Skynet Networking:** Applied identical commands and persistent lines to `/etc/network/interfaces` on Skynet.
 
-### Issue 45: Traefik Zombie Connections & Lack of Active Backend Health Checks
+### Issue 46: Traefik Zombie Connections & Lack of Active Backend Health Checks
 * **Symptoms:** After resolving the IPv6 NDP discovery block (Issue 44), Traefik (LXC 112) and Authelia (LXC 113) still returned `502/504 Bad Gateway` or `no available server` errors when trying to reach backends like Radarr or Seerr. Even after the firewall rules were corrected, Traefik required a manual restart to reconnect to the services.
 * **Diagnosis:**
   1. **Zombie TCP Keep-Alives:** When the Proxmox firewall silently dropped NDP packets, Traefik's persistent TCP connections were broken without a `FIN` or `RST` signal. Traefik waited on dead sockets until the Linux kernel's default 15-minute TCP timeout expired.
@@ -705,7 +663,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 17 July 2026
 
-### Issue 46: Headless Moonlight / Sunshine Control Node Integration
+### Issue 47: Headless Moonlight / Sunshine Control Node Integration
 * **Symptoms:** Need to establish a modern, low-latency control flow between the Pi4 (thin client) and the high-performance Debian Trixie VM on skynet using Moonlight-qt/Sunshine while prioritizing IPv6 ULA communication and deprecating legacy IPv4 references.
 * **Diagnosis:** The Pi4 hardware needed to run in headless streaming client mode (Pi Lite Trixie) with `moonlight-qt`. The VM on skynet (`fddf::4`) required iGPU passthrough and Sunshine configured to stream natively.
 * **Fix Applied:** Configured and documented the network endpoints and services. Assigned static ULA `fddf::4` to the VM and `fddf::3` to the Pi4. Updated the global host inventory in both the active and infrastructure folders to maintain consistency.
@@ -715,7 +673,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 19 July 2026
 
-### Issue 47: Re-creation of Proxmox Backup Server (PBS) Datastore and Cluster Re-integration
+### Issue 48: Re-creation of Proxmox Backup Server (PBS) Datastore and Cluster Re-integration
 * **Symptoms:** The PBS datastore `Backups` became inactive across the Proxmox cluster (specifically on `matrix` and `skynet`) after replacing the backup SSD. The storage definition was absent from `/etc/pve/storage.cfg`, and the PBS daemon logged prune errors.
 * **Diagnosis:** The user replaced the 1TB backup SSD with a 256GB SSD (`nvme1n1`). The new drive was mounted at `/mnt/datastore/Backups` and formatted with XFS, but the PVE storage configuration lacked the corresponding PBS storage definition. The PBS service also needed a restart to recognize the empty datastore state, and a secure API token was required to re-authenticate the PVE nodes.
 * **Fix Applied:** Re-registered the `Backups` datastore configuration, generated a dedicated PBS API token (`root@pam!backup-token`), authorized it via ACLs (`DatastoreAdmin`), and re-added the PBS storage to PVE.
@@ -740,7 +698,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
 
 ## Date: 20 July 2026
 
-### Issue 48: Headless Moonlight Flatpak EGLFS Display and Input Failures on NUC Client (TTY)
+### Issue 49: Headless Moonlight Flatpak EGLFS Display and Input Failures on NUC Client (TTY)
 * **Symptoms:** Running Moonlight via Flatpak directly on the physical console TTY (without a desktop environment) failed with `SDL Error: kmsdrm not available` or hung with `Could not set DRM mode (Autorisation refusée)`, and keyboard inputs were completely unresponsive.
 * **Diagnosis:** Flatpak's user namespace isolation blocks GID mapping, causing the host's `video`, `render`, and `input` groups to be unmapped (showing as `nfsnobody`) inside the sandbox. The sandboxed application is blocked from accessing the GPU nodes and input nodes directly. Additionally, Flatpak's D-Bus proxy blocks file descriptor (FD) passing for `systemd-logind`'s `TakeDevice` interface, preventing the non-root user `tuco` from acquiring the DRM Master lock.
 * **Fix Applied:** Switched from EGLFS to a minimal Wayland Kiosk compositor (`cage`) running natively on the host to manage session initialization. Configured Flatpak overrides to explicitly map DRI devices and permit logind D-Bus communication.
@@ -752,7 +710,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
   4. **Launch Command:** Launched Moonlight cleanly inside the kiosk Wayland environment:
      `cage flatpak run com.moonlight_stream.Moonlight`
 
-### Issue 49: USB Autosuspend Delays and CPU Latency Optimization on NUC Client
+### Issue 50: USB Autosuspend Delays and CPU Latency Optimization on NUC Client
 * **Symptoms:** Keyboard and mouse (specifically Logitech and CX 2.4G wireless receivers) experienced wake-up delay and went to sleep after a few seconds of inactivity under the Cage/Wayland headless Moonlight setup. CPU scaling driver `intel_pstate` used default `balance_performance` but required persistence and validation.
 * **Diagnosis:** USB autosuspend was enabled for HIDs/receivers, suspending them after 2 seconds of inactivity. The Intel P-State scaling driver was running with the `powersave` governor and `balance_performance` EPP, which was the correct target configuration but required persistence confirmation.
 * **Fix Applied:** Configured persistence for EPP scaling and added targeted `udev` rules to disable USB autosuspend for Logitech (`046d:c53f`) and CX 2.4G (`3554:fa0a`) wireless receivers.
@@ -770,9 +728,28 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      ```
   3. **Verification:** Confirmed after reboot/trigger that `/sys/bus/usb/devices/.../power/control` evaluates to `on` for both receivers.
 
+## Date: 23 July 2026
+
+### Issue 51: `skynet` 5GbE Network Link Loss after Proxmox Kernel Upgrade
+* **Symptoms:** After rebooting `skynet` onto PVE kernel `7.0.14-6-pve`, the primary ULA interface `fddf::2` (`nic0` / `vmbr0`) became completely unreachable. The 10G direct SAN link `fddd::2` (`vmbr2`) remained active and reachable from `matrix`.
+* **Diagnosis:** The Realtek RTL8126 5GbE controller required the `realtek-r8126-dkms` module (version 10.017.00) while the native kernel driver `r8169` was blacklisted in `/etc/modprobe.d/blacklist.conf`. During the kernel upgrade to `7.0.14-6-pve`, DKMS failed to rebuild the module because `proxmox-headers` for the new kernel were missing, leaving `nic0` without a driver.
+* **Fix Applied:** 
+  1. Routed temporary internet access from `matrix` (`fddd::1`) to `skynet` (`fddd::2`).
+  2. Installed kernel headers (`proxmox-headers-7.0.14-6-pve`) and `proxmox-default-headers` to automate header installation for all future kernel updates.
+  3. Rebuilt and installed the `r8126` module via `dkms autoinstall`.
+  4. Added `r8126` to `/etc/modules` for explicit boot loading.
+  5. Kept the fallback 10G IPv6 default route via `matrix` (`fddd::1`) for resilience.
+* **Implementation:**
+  ```bash
+  sudo apt-get update && sudo apt-get install -y proxmox-default-headers proxmox-headers-$(uname -r)
+  sudo dkms autoinstall -k $(uname -r)
+  echo "r8126" | sudo tee -a /etc/modules
+  sudo ip link set dev nic0 master vmbr0 && sudo ip link set dev nic0 up
+  ```
+
 ## Date: 24 July 2026
 
-### Issue 50: IPv6 Wintun Roaming Drops & Route Information Option (RIO) Security Blocks
+### Issue 52: IPv6 Wintun Roaming Drops & Route Information Option (RIO) Security Blocks
 * **Symptoms:** The WireGuard VPN connection on Windows (T800) experienced intermittent dropouts and continuous "Neighbour Solicitations" flooding the `fdfd::/112` subnet during roaming (switching from cellular back to LAN). Additionally, Proxmox VMs were unable to automatically learn the ULA route to `fdfd::/112` via Router Advertisements (RA).
 * **Diagnosis:** 
   1. **Wintun Driver Behavior:** The Windows Wintun virtual adapter attempted Layer 2 hardware discovery (NDP Solicitations) inside a Layer 3 tunnel during network transitions because the WireGuard endpoint DNS resolution was stale (pointing to Traefik's IPv4 instead of the GUA IPv6 endpoint).
@@ -781,9 +758,31 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
   1. **VPN Endpoint Resolution:** Resolved the Wintun timeout by ensuring the WireGuard client reconnects cleanly to the correct IPv6 GUA endpoint.
   2. **Architecture Decision (Static Routes):** Decided against global `sysctl` modifications or NAT Masquerade to maintain Zero-Trust architectural purity. Chose to implement static routes manually in `/etc/network/interfaces` for any Proxmox node/client needing direct access to the `fdfd::/112` VPN subnet.
 
+## Date: 25 July 2026
+
+### Issue 53: Proxmox Host Boot Delay & Transition to Native ZFS over iSCSI SAN (`Remote-pool` / `Local-pool`)
+* **Symptoms:** Rebooting `matrix` caused a 4-minute boot hang at `open-iscsi.service` when `skynet` was offline or slow to initialize. Additionally, the NFS SAN share (`/zfs-pool/pve-nfs`) was unused and inefficient for dynamic VM ZVOL disk provisioning.
+* **Diagnosis:** 
+  1. `systemd-analyze blame` identified `open-iscsi.service` spending 4 minutes 15 seconds attempting auto-logins to `fddd::2:3260` during early boot because the target record in `/var/lib/iscsi/nodes/` was set to `node.startup = automatic` with a 120-retry limit.
+  2. `/etc/fstab` iSCSI block mounts for `disk1`/`disk2` lacked fast device timeouts (`x-systemd.device-timeout=5s`), forcing `systemd` to wait up to 90 seconds per device.
+  3. Renaming local storage IDs broke LXC container rootfs/subvol bindings on `skynet` because container configs in `/etc/pve/nodes/skynet/lxc/*.conf` hardcoded the storage ID prefix.
+* **Fix Applied:** 
+  1. Decommissioned unused NFS storage entry (`nfs`) from Proxmox Datacenter.
+  2. Configured Proxmox native ZFS over iSCSI (`iscsiprovider LIO`) between `matrix` (`Remote-pool`) and `skynet` (`Local-pool`).
+  3. Updated persistent iSCSI node database on `matrix` (`/var/lib/iscsi/nodes/iqn.2024-01.local.homelab:skynet-target/fddd::2,3260,1/default`) to maintain `node.startup = automatic` for Media drives while setting fast timeouts (`login_timeout = 3`, `initial_login_retry_max = 2`), enabling automatic block device attachment on boot without blocking host startup if network links lag.
+  4. Added `x-systemd.device-timeout=5s` to `/etc/fstab` for `disk1` and `disk2` on `matrix`, and removed invalid `,nofail` parameters from MergerFS FUSE mount options.
+  5. Updated LXC volume references (`1111`, `131`, `132`) on `skynet` to `Local-pool:`.
+* **Implementation:**
+  ```bash
+  # Tune persistent iSCSI node database on matrix for fast auto-login
+  sudo iscsiadm -m node -T iqn.2024-01.local.homelab:skynet-target -o update -n node.startup -v automatic
+  sudo iscsiadm -m node -T iqn.2024-01.local.homelab:skynet-target -o update -n node.session.initial_login_retry_max -v 2
+  sudo iscsiadm -m node -T iqn.2024-01.local.homelab:skynet-target -o update -n node.conn[0].timeo.login_timeout -v 3
+  ```
+
 ## Date: 3 August 2026
 
-### Issue 51: Intel Wi-Fi (iwlwifi) PCIe Bus Disconnect & ADVANCED_SYSASSERT Failure on Sleep Resume
+### Issue 54: Intel Wi-Fi (iwlwifi) PCIe Bus Disconnect & ADVANCED_SYSASSERT Failure on Sleep Resume
 * **Symptoms:** Wi-Fi completely stopped working after resuming from system sleep (`s2idle`). `Wifi.log` showed an onboard microcode crash (`ADVANCED_SYSASSERT`) followed by `0xFFFFFFFF` register reads, indicating the card dropped off the PCIe bus (`0000:01:00.0`). Soft resets timed out (`timeout waiting for FW reset ACK`), requiring a full host reboot.
 * **Diagnosis:** Upon waking from sleep, NetworkManager requested link initialization (`do-change-link`), but the operation timed out (`ETIMEDOUT`). The laptop's Intel Wi-Fi card failed link re-training during D3-to-D0 power state transitions when transitioning out of `s2idle` sleep mode. Past userspace attempts (systemd sleep module hooks and NetworkManager dispatchers) failed because dispatchers only execute post-connection and systemd hooks get blocked by active Netlink sockets.
 * **Fix Applied:** Created a persistent driver module configuration at `/etc/modprobe.d/iwlwifi.conf` to explicitly disable driver-level power saving (`power_save=0`) and force active power scheme (`power_scheme=1`) at the kernel initialization level.
@@ -795,4 +794,3 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      ```
   2. Verified persistence via CLI inspection (`cat /etc/modprobe.d/iwlwifi.conf`).
 * **Status:** **Pending Operability Verification.** Operability and long-term stability under multiple sleep/resume cycles are currently awaiting user testing and monitoring over upcoming boot sessions.
-
