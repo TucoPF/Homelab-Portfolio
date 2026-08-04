@@ -758,6 +758,7 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
   1. **VPN Endpoint Resolution:** Resolved the Wintun timeout by ensuring the WireGuard client reconnects cleanly to the correct IPv6 GUA endpoint.
   2. **Architecture Decision (Static Routes):** Decided against global `sysctl` modifications or NAT Masquerade to maintain Zero-Trust architectural purity. Chose to implement static routes manually in `/etc/network/interfaces` for any Proxmox node/client needing direct access to the `fdfd::/112` VPN subnet.
 
+<<<<<<< HEAD
 ## Date: 25 July 2026
 
 ### Issue 53: Proxmox Host Boot Delay & Transition to Native ZFS over iSCSI SAN (`Remote-pool` / `Local-pool`)
@@ -791,6 +792,17 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      ```ini
      options iwlwifi power_save=0
      options iwlmvm power_scheme=1
-     ```
-  2. Verified persistence via CLI inspection (`cat /etc/modprobe.d/iwlwifi.conf`).
+      2. Verified persistence via CLI inspection (`cat /etc/modprobe.d/iwlwifi.conf`).
 * **Status:** **Pending Operability Verification.** Operability and long-term stability under multiple sleep/resume cycles are currently awaiting user testing and monitoring over upcoming boot sessions.
+
+## Date: 04 August 2026
+
+### Issue 55: Storage Gatekeeper Pattern for Asynchronous iSCSI Mounts & Boot Loop Elimination
+* **Symptoms:** Simultaneous cold reboots of matrix and skynet (e.g. following a power cut) caused matrix to boot faster (25s) than skynet (56s). `open-iscsi` and `/etc/fstab` timed out after 30 seconds, causing MergerFS to mount empty target directories and leaving Jellyfin without media libraries.
+* **Diagnosis:** Static `/etc/fstab` mounts enforced early-boot synchronous dependencies, creating a boot race condition whenever skynet took longer to complete POST and initialize its SAS LIO iSCSI targets.
+* **Fix Applied:** Decoupled iSCSI and MergerFS mounts entirely from `/etc/fstab` on matrix. Deployed an asynchronous background daemon (`storage_gatekeeper.sh` and `storage-gatekeeper.service`) to probe skynet's 10G iSCSI portal indefinitely, attach `/dev/disk/by-label/disk1` and `/dev/disk/by-label/disk2`, mount MergerFS pools, assert mount health, and launch media containers (`pct start 101 102 103`).
+* **Implementation:**
+  1. **Clean Fstab:** Commented out `disk1`, `disk2`, `matrix-pool`, and `fusion` in `/etc/fstab` on matrix while leaving local NVMe cache (`matrix-cache`) intact.
+  2. **Gatekeeper Script:** Created `/home/tuco/scripts/storage_gatekeeper.sh` on matrix with native `iscsiadm` discovery probing, `/dev/disk/by-label/` mount targeting, MergerFS initialization, and LXC container startup logic (`onboot: 0` for CT 101, 102, 103).
+  3. **Systemd Service:** Created and enabled `/etc/systemd/system/storage-gatekeeper.service` (`After=network-online.target`) with `TimeoutStartSec=0` to run asynchronously post-boot.
+  4. **Nightly Mover Hardening:** Updated `/home/tuco/scripts/fusion_mover.sh` with `mountpoint -q` assertions for `/mnt/disk1` and `/mnt/disk2` and updated `fusion-mover.service` to depend on `storage-gatekeeper.service` to prevent OS drive fill.

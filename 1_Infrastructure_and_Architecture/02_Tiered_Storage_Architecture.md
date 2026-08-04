@@ -23,8 +23,8 @@ This section reflects the transition to a high-performance native Proxmox ZFS ov
 | `Remote-pool` (matrix ZFS-o-iSCSI)| `[fddd::2]:3260` (LIO provider) | `ZFS over iSCSI` | Cloud Tier (Remote VM ZVOLs) |
 
 ### 📝 Core Configuration Files
-#### matrix (`/etc/fstab`) - Hardware Execution Lock & Fast Boot Resilience
-All physical media layers are mounted with `noexec` and fast device timeouts (`x-systemd.device-timeout=5s`) to prevent boot hangs when network links initialize.
+#### matrix (`/etc/fstab` & `storage_gatekeeper.sh`) - Asynchronous SAN Mounting
+Physical media layers (`disk1`, `disk2`, `matrix-pool`, `fusion`) are decoupled from `/etc/fstab` to eliminate host boot dependencies and timing race conditions. Probed and mounted asynchronously post-boot by `/home/tuco/scripts/storage_gatekeeper.sh` via `storage-gatekeeper.service`.
 ```text
 # Local NVMe Cache SSD (Samsung 990 Pro)
 UUID=3f74a8bb-8adc-44b0-a2a1-093ed387c4c0  /mnt/matrix-cache  ext4  defaults,noatime,nofail,noexec  0  2
