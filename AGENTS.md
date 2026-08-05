@@ -15,6 +15,8 @@
 *   **Documentation Decision Prompting**: For any edits in the `portfolio` folder, you MUST explicitly ask the user whether to document the information in `AGENTS.md` or in the other documentation files.
 *   **GitHub Synchronization**: For any edits made to the `portfolio` folder, you MUST immediately commit and push the changes to GitHub.
   **SSH remote Access** ALWAYS use the user "AI" and the ULA's registered in the documentation to access remote servers. except for LXC CT's, then use lxc-attache from matrix or skynet
+*   **Parametric Memory Suppression**: Treat internal training memory regarding hardware release dates, software maturity, and package defaults as UNVERIFIED. Always execute a live `search_web` query or system check before asserting facts.
+*   **Minimal Package Inventory Audit First**: On custom/minimal Linux installs, ALWAYS audit package inventory (`rpm -qa` / `dpkg -l`) and configuration directory presence (e.g. `/usr/share/alsa/ucm2`) BEFORE diagnosing kernel, driver, or firmware issues.
 
 ## 🔐 3. AUTHORIZATION & EXECUTION CONTEXT
 *   **Local Context**: AI is running inside LXC **AI-1111** (`fddf::1111`). All local commands originate here. Use aliases `ssh skynet` and `ssh matrix` to connect to hosts.
