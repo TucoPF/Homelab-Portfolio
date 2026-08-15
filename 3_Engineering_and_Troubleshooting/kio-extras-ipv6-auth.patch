@@ -1,0 +1,24 @@
+diff --git a/smb/smbauthenticator.cpp b/smb/smbauthenticator.cpp
+index cc7e77301..603641884 100644
+--- a/smb/smbauthenticator.cpp
++++ b/smb/smbauthenticator.cpp
+@@ -52,6 +52,19 @@ void SMBAuthenticator::auth(SMBCCTX *context,
+     QString s_password = QString::fromUtf8(password);
+ 
+     KIO::AuthInfo info;
++    if (s_server.endsWith(QLatin1String(".ipv6-literal.net"))) {
++        s_server.chop(17); // Remove .ipv6-literal.net
++        if (s_server.startsWith(QLatin1String("0-"))) {
++            s_server.remove(0, 1);
++        }
++        if (s_server.endsWith(QLatin1String("-0"))) {
++            s_server.chop(1);
++        }
++        s_server.replace(QLatin1Char('s'), QLatin1Char('%'));
++        s_server.replace(QLatin1Char('-'), QLatin1Char(':'));
++        qCDebug(KIO_SMB_LOG) << "reverted IPv6 literal back to" << s_server;
++    }
++
+     info.url = QUrl("smb:///");
+     info.url.setHost(s_server);
+     info.url.setPath('/' + s_share);
