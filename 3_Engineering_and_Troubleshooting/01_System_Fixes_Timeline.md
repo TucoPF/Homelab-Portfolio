@@ -1,8 +1,13 @@
 # System Fixes Log
 
-## Date: 10 March 2026
+## Date: 15 August 2026
 
-### Issue 1: Unexpected Idle Reboots
+### Feature/Setup: Samba Share on CT 133 (Paolo-133 / Cloud)
+* **Context:** Private cloud LXC container 133 (`Paolo-133`, ULA `fddf::133`) on node `skynet` with 1 TB ZFS storage volume attached at `/srv/Cloud`.
+* **Action:** Installed Samba, configured user `tuco` with SMB authentication, granted ownership of `/srv/Cloud` to `tuco:tuco`, and exposed the `[Cloud]` share (`read only = no`, `force user = tuco`).
+* **Verification:** Validated `smb.conf` syntax with `testparm` and confirmed `smbd` daemon active and serving requests.
+
+## Date: 10 March 2026
 * **Symptoms:** The HP Spectre 16 (Meteor Lake) laptop would suddenly reboot when left completely idle, particularly around times of low activity.
 * **Diagnosis:** A known stability issue with Intel Meteor Lake processors on recent Linux kernels where transitioning into deep sleep states (C6-C10) causes a crash or hard reset.
 * **Fix Applied:** Added the kernel parameter `intel_idle.max_cstate=4` to limit the depth of processor sleep states.
