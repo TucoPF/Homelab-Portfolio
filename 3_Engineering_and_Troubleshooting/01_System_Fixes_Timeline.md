@@ -8,6 +8,9 @@
   1. Installed Samba, configured user `tuco` with SMB authentication, granted ownership of `/srv/Cloud` to `tuco:tuco`, and exposed the `[Cloud]` share.
   2. Updated `/etc/systemd/system/static-ipv6.service` to append static IPv6 routing for VPN clients (`fdfd::/64 via fddf::111 dev eth0`).
 * **Verification:** Validated `smb.conf` with `testparm`, verified `smbd` daemon status, and confirmed routing table via `ip -6 route` and ICMP test to `fddf::111`.
+* **Learnings & Workarounds:** 
+  * **Trailing Spaces:** Samba strictly enforces Windows filename rules; trailing spaces before file extensions cause silent copy failures.
+  * **KDE Dolphin IPv6 Bug:** `kio_smb` corrupts NTLM authentication when parsing literal IPv6 addresses (e.g. `[fddf::133]`). **Fix:** Mapped the IP to a local hostname (`paolo-nas`) in the client's `/etc/hosts` to bypass the GUI bug.
 
 ## Date: 10 March 2026
 * **Symptoms:** The HP Spectre 16 (Meteor Lake) laptop would suddenly reboot when left completely idle, particularly around times of low activity.
