@@ -81,6 +81,18 @@
                             <div class="incident-solution"><strong>Résolution :</strong> Suppression de la dépendance forcée au démarrage et refactorisation de `/etc/fstab` avec les options `_netdev,nofail,x-systemd.after` pour forcer un montage dynamique et propre après le réseau.</div>
                         </div>
                     </div>
+
+                    <div class="troubleshooting-accordion">
+                        <button class="accordion-trigger">
+                            <span>🔍 Cas pratique : Patch C++ & Reverse-Engineering KDE (kio_smb)</span>
+                            <span class="arrow"></span>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="incident-meta"><strong>Symptôme :</strong> Boucle infinie d'authentification lors du montage d'un partage Samba via une adresse IPv6 ULA sous KDE Dolphin.</div>
+                            <div class="incident-desc"><strong>Analyse :</strong> Le worker natif KDE traduisait l'IPv6 en `.ipv6-literal.net` mais omettait la rétro-traduction avant d'interroger KWallet, créant un échec de cache permanent.</div>
+                            <div class="incident-solution"><strong>Résolution :</strong> Développement d'un algorithme de rétro-traduction en C++, recompilation locale du module système (.so) et injection directe dans l'OS. <a href="https://github.com/TucoPF/Homelab-Portfolio/blob/main/3_Engineering_and_Troubleshooting/09_KDE_KIO_SMB_IPv6_Bug_Patch.md" target="_blank" style="color: var(--system); text-decoration: underline; margin-top: 8px; display: inline-block;">📄 Lire le rapport détaillé</a></div>
+                        </div>
+                    </div>
                 </div>
             </article>
 
