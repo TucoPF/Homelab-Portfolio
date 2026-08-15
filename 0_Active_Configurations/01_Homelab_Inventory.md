@@ -34,7 +34,6 @@
   - **200 (Debian-Server-Template):** Stopped, 2 GiB RAM, 32G Disk
   - **400 (Windows-Template-Desktop):** Stopped, 16 GiB RAM, 100G Disk
   - **500 (Windows-Template-Server):** Stopped, 16 GiB RAM, 100G Disk
-  - **2222 (Fedora-Workstation):** 16 GiB RAM, 12 vCPUs, 52G OS Disk (`/dev/sda2`), 1000G ZFS over iSCSI Home Disk (`/dev/sdb1`), IP: 192.168.1.22 (ULA: `fddf::2222`). Configured with Intel iGPU SR-IOV VF 1 Primary Passthrough (`hostpci0: 0000:00:02.1,pcie=1,x-vga=1`, `vga: none`), `vkms` Hardware KMS Cursor Plane (`DRM_PLANE_TYPE_CURSOR`), Sunshine VA-API QuickSync (`h264_vaapi`) hardware acceleration at 2560x1440@240Hz, and `ID_INPUT_MOUSE=1` udev high-priority input scheduling.
 
 - **Software:**
   - **OS:** Debian GNU/Linux 13 (trixie)
@@ -79,8 +78,7 @@
   - **GPU:** Intel Corporation HD Graphics 620 (rev 02)
   - **RAM:** 8 GiB DDR4
   - **Storage:** SSD
-- **Active Services:**
-  - **Moonlight-qt:** Headless client streaming and controlling the high-performance Debian Trixie VM on skynet (`fddf::2222`).
+- **Active Services:** None
 - **Software:**
   - **OS:** Debian GNU/Linux 13 (trixie, version 13.6, Kernel `6.12.95+deb13-amd64`)
   - **Network stack:** systemd-networkd & iwd (Wi-Fi `wlan0`, Power Save disabled)

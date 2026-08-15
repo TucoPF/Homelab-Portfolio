@@ -69,7 +69,6 @@
     *   **VM 200 (Debian-Server-Template)**: Stopped.
     *   **VM 400 (Windows-Template-Desktop)**: Stopped.
     *   **VM 500 (Windows-Template-Server)**: Stopped.
-    *   **VM 2222 (Fedora-Workstation)**: 16GB RAM, 12 vCPUs. ULA `fddf::2222` (IPv4 `192.168.1.22`). 52GB system root (`/dev/sda2`), 1000GB ZFS over iSCSI home disk (`/dev/sdb1`). Accessible via `ssh AI@fddf::2222`.
 
 
 #### 📦 skynet - Storage & Backup Backend (Upgraded Custom Tower)
@@ -88,8 +87,6 @@
     *   SAN Backend: 2x 10 TB Seagate Exos SAS HDDs (`sda`, `sdd`) exported as raw block devices via iSCSI (LIO target) for the Media Tier.
     *   ZFS Storage: 2x 10 TB Seagate Exos SAS HDDs (`sdb`, `sdc`) natively pooled locally on skynet as a ZFS Mirror (`zfs-pool`).
 *   **Services**: `pveproxy`, `pve-cluster`, `proxmox-backup-server` (Datastore `Backups` bound to `[fddd::2]:8007`), `targetcli` (iSCSI LIO Target `iqn.2024-01.local.homelab:skynet-target` configured over 10G portal `[fddd::2]:3260`). skynet natively runs ZFS for the Cloud Storage Tier.
-*   **Active Virtualization**:
-    *   **VM (Debian Trixie - fddf::2222)**: High-performance Debian Trixie VM with iGPU passthrough. Streams via Sunshine for remote desktop hosting.
 
 #### 💻 Nuc - Redundant Services Node / Control Node
 *   **Model**: Intel NUC7i3DNHE (Motherboard: NUC7i3DNB)
