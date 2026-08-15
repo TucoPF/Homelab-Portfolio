@@ -1,16 +1,6 @@
 # System Fixes Log
 
-## Date: 15 August 2026
 
-### Feature/Setup: Samba Share & Routing on CT 133 (Paolo-133 / Cloud)
-* **Context:** Private cloud LXC container 133 (`Paolo-133`, ULA `fddf::133`) on node `skynet` with 1 TB ZFS storage volume attached at `/srv/Cloud`.
-* **Action:** 
-  1. Installed Samba, configured user `tuco` with SMB authentication, granted ownership of `/srv/Cloud` to `tuco:tuco`, and exposed the `[Cloud]` share.
-  2. Updated `/etc/systemd/system/static-ipv6.service` to append static IPv6 routing for VPN clients (`fdfd::/64 via fddf::111 dev eth0`).
-* **Verification:** Validated `smb.conf` with `testparm`, verified `smbd` daemon status, and confirmed routing table via `ip -6 route` and ICMP test to `fddf::111`.
-* **Learnings & Workarounds:** 
-  * **Trailing Spaces:** Samba strictly enforces Windows filename rules; trailing spaces before file extensions cause silent copy failures.
-  * **KDE Dolphin IPv6 Bug:** `kio_smb` corrupts NTLM authentication when parsing literal IPv6 addresses (e.g. `[fddf::133]`). **Fix:** Mapped the IP to a local hostname (`paolo-nas`) in the client's `/etc/hosts` to bypass the GUI bug.
 
 ## Date: 10 March 2026
 * **Symptoms:** The HP Spectre 16 (Meteor Lake) laptop would suddenly reboot when left completely idle, particularly around times of low activity.
@@ -816,3 +806,17 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
   2. **Gatekeeper Script:** Created `/home/tuco/scripts/storage_gatekeeper.sh` on matrix with native `iscsiadm` discovery probing, `/dev/disk/by-label/` mount targeting, MergerFS initialization, and LXC container startup logic (`onboot: 0` for CT 101, 102, 103).
   3. **Systemd Service:** Created and enabled `/etc/systemd/system/storage-gatekeeper.service` (`After=network-online.target`) with `TimeoutStartSec=0` to run asynchronously post-boot.
   4. **Nightly Mover Hardening:** Updated `/home/tuco/scripts/fusion_mover.sh` with `mountpoint -q` assertions for `/mnt/disk1` and `/mnt/disk2` and updated `fusion-mover.service` to depend on `storage-gatekeeper.service` to prevent OS drive fill.
+
+## Date: 15 August 2026
+
+### Issue 56: KDE Dolphin IPv6 SMB Authentication Loop (kio-extras bug)
+* **Symptoms:** Connecting to `smb://[fddf::133]/Cloud` (Samba CT 133 on skynet) via KDE Dolphin prompted for a password continuously in an infinite loop. The server logs (`smbd`) revealed that the client was falling back to a Guest login, which the server rightfully denied (`NT_STATUS_ACCESS_DENIED`). Connecting via CLI `smbclient //fddf::133/Cloud` worked perfectly.
+* **Diagnosis:** The `kio_smb` (part of `kio-extras`) worker manipulates literal IPv6 addresses (converting `[fddf::133]` into `fddf--133.ipv6-literal.net`) to accommodate older Samba libraries. However, it failed to reverse this translation before querying the KDE Wallet for stored credentials. KWallet stored the password under `[fddf::133]`, but KIO searched for `.ipv6-literal.net`, resulting in a cache miss and forcing an anonymous connection attempt.
+* **Fix Applied:** Engineered a C++ patch for `smbauthenticator.cpp` to accurately reverse-parse `.ipv6-literal.net` hostnames back into native IPv6 format *before* hitting the KWallet verification logic.
+* **Implementation:**
+  1. Identified root cause in `kio-extras/smb/smbauthenticator.cpp`.
+  2. Injected custom string manipulation algorithm using `QString::endsWith` and `replace`.
+  3. Deployed a disposable Fedora KDE Virtual Machine (`fddf::201`) to validate the fix in an isolated environment.
+  4. Resolved a transient IPv6 NDP cache bug on the bridge during testing (by forcing an inbound ping from `fddf::133`).
+  5. Compiled the patched `kio_smb.so` via `cmake` on the VM and replaced the system module.
+* **Status:** Verified complete resolution of the infinite loop. Prepared an upstream KDE Bug Report and `.patch` file for community submission.
