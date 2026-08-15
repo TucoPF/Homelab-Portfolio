@@ -2,10 +2,12 @@
 
 ## Date: 15 August 2026
 
-### Feature/Setup: Samba Share on CT 133 (Paolo-133 / Cloud)
+### Feature/Setup: Samba Share & Routing on CT 133 (Paolo-133 / Cloud)
 * **Context:** Private cloud LXC container 133 (`Paolo-133`, ULA `fddf::133`) on node `skynet` with 1 TB ZFS storage volume attached at `/srv/Cloud`.
-* **Action:** Installed Samba, configured user `tuco` with SMB authentication, granted ownership of `/srv/Cloud` to `tuco:tuco`, and exposed the `[Cloud]` share (`read only = no`, `force user = tuco`).
-* **Verification:** Validated `smb.conf` syntax with `testparm` and confirmed `smbd` daemon active and serving requests.
+* **Action:** 
+  1. Installed Samba, configured user `tuco` with SMB authentication, granted ownership of `/srv/Cloud` to `tuco:tuco`, and exposed the `[Cloud]` share.
+  2. Updated `/etc/systemd/system/static-ipv6.service` to append static IPv6 routing for VPN clients (`fdfd::/64 via fddf::111 dev eth0`).
+* **Verification:** Validated `smb.conf` with `testparm`, verified `smbd` daemon status, and confirmed routing table via `ip -6 route` and ICMP test to `fddf::111`.
 
 ## Date: 10 March 2026
 * **Symptoms:** The HP Spectre 16 (Meteor Lake) laptop would suddenly reboot when left completely idle, particularly around times of low activity.
