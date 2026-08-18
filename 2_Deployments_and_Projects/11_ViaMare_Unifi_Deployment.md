@@ -148,7 +148,18 @@ Pour optimiser et professionnaliser davantage l'infrastructure du domaine, une t
 ---
 
 ## 🔮 Roadmap / Phase 2 (Extension Haute : Bergeries & Chalet)
-* **Objectif :** Raccorder et couvrir en Wi-Fi les bâtis supérieurs situés en restanques (2 Bergeries avec 2 chambres/1 SdB et le Chalet avec 1 chambre).
-* **Options Techniques d'Acheminement :**
-  * *Liaison Filaire (Recommandée) :* Tirage d'une ligne extérieure Cat6a ou fibre optique sous fourreau étanche pour garantir une immunité totale contre les orages et une bande passante sans compromis.
-  * *Pont Radio Sans-Fil (PtP) :* Déploiement d'un pont sans-fil dédié (ex: Ubiquiti Building Bridge UBB ou NanoStation 5AC) pour franchir la distance et le dénivelé sans nécessiter de tranchée technique.
+
+### 1. Objectif de Couverture
+Étendre la connectivité Wi-Fi vers les hauteurs du domaine en desservant :
+* **Les Bergeries :** 2 logements détachés (2 chambres, 1 SdB).
+* **Le Chalet / Cabane :** Bâtisse située environ **20 mètres plus loin et 3 mètres plus haut**, dans un environnement totalement dégagé (vue directe / Line-of-Sight).
+
+### 2. Tracé & Travaux d'Acheminement Filaire
+* **Cheminement :** Départ depuis le switch USW-Ultra dans le garage $\rightarrow$ traversée du garage $\rightarrow$ sortie en façade arrière au niveau de la **cuisine extérieure** $\rightarrow$ tranchée avec enfouissement d'une gaine technique étanche (câble Cat6a extérieur résistant aux UV / intempéries) montant jusqu'au niveau des bergeries.
+* **Point de Fixation Stratégique :** Installation et fixation de l'AP extérieur sur l'**arbre situé directement en face des Bergeries**.
+
+### 3. Choix Matériel & Ingénierie de Couverture (U7 Outdoor)
+* **Équipement Prévu :** **Ubiquiti UniFi U7 Outdoor** (ou **U7 Pro Outdoor**) avec ses **antennes externes directionnelles / sectorielles**.
+* **Rationale Technique :**
+  * **Étanchéité & Résistance Climatique :** Châssis certifié IPX6 conçu pour les conditions extérieures méditerranéennes.
+  * **Rayonnement Double Portée :** L'utilisation des antennes externes à fort gain permet d'arroser efficacement les Bergeries à courte distance tout en projetant un faisceau puissant et direct vers le Chalet situé 20 mètres plus haut en surplomb, éliminant ainsi le besoin d'une seconde tranchée coûteuse.
