@@ -75,19 +75,19 @@ Le réseau interne est rigoureusement segmenté en 4 réseaux (VLANs) distincts 
 ---
 
 ## 📻 Ingénierie Radio & Optimisation RF (Fréquences & Canaux)
-Le paramétrage des canaux et des largeurs de bande a été calibré sur-mesure pour concilier débit maximal, compatibilité et pénétration du signal :
+Le paramétrage des canaux et des largeurs de bande a été calibré pour concilier débit maximal, pénétration du signal et compatibilité domotique :
 
-### 1. `AP-Bungalow` (Minivilla - U6-Pro)
-* **Bande 2.4 GHz :** Largeur **20 MHz**, Canal **6**.
-  * *Rationale :* Le 20 MHz maximise le rapport signal/bruit (SNR) et optimise la pénétration du signal à travers les murs de la bâtisse de 70m².
-* **Bande 5 GHz :** Largeur **40 MHz**, Canal **100 (DFS)**.
-  * *Rationale :* Une largeur resserrée à 40 MHz sur la bande DFS 100 offre une meilleure traversée des obstacles solides qu'en 80/160 MHz tout en préservant un débit très conséquent.
+### 🌐 Bande 2.4 GHz (Standardisée sur tout le domaine)
+* **Configuration (`AP-Bungalow`, `AP-Maison`, `AP-Chambre`) :** Largeur **20 MHz**, Canal **6**.
+* **Rationale Technique :**
+  * **Pénétration & Portée :** La largeur de 20 MHz maximise le rapport signal/bruit (SNR) et optimise la traversée des murs épais (notamment dans la bâtisse de 70m² de la Minivilla).
+  * **Compatibilité IoT / Domotique :** Assure une interopérabilité universelle et sans faille avec l'ensemble des modules domotiques et objets connectés (IoT) du domaine.
 
-### 2. `AP-Maison` (U7-Lite) & `AP-Chambre` (U6+)
-* **Bande 2.4 GHz :** Largeur **20 MHz**, Canal **6**.
-  * *Rationale :* Configuration standard en 20 MHz garantissant une compatibilité universelle avec les périphériques domotiques et objets connectés (IoT).
-* **Bande 5 GHz :** Largeur **160 MHz**, Canal **100 (DFS)**.
-  * *Rationale :* Largeur maximale de 160 MHz sur bande DFS libérée pour délivrer des débits de pointe extrêmes et exploiter les capacités Wi-Fi 6/7 dans le cœur de vie du domaine.
+### 🚀 Bande 5 GHz (Calibrée selon les zones)
+* **`AP-Bungalow` (Minivilla - U6-Pro) :** Largeur **40 MHz**, Canal **100 (DFS)**.
+  * *Rationale :* Une largeur resserrée à 40 MHz sur la bande DFS 100 privilégie la traversée des obstacles et cloisons tout en préservant un débit très confortable.
+* **`AP-Maison` (U7-Lite) & `AP-Chambre` (U6+) :** Largeur **160 MHz**, Canal **100 (DFS)**.
+  * *Rationale :* Exploitation de la largeur maximale de 160 MHz sur bande DFS pour délivrer des débits de pointe Wi-Fi 6/7 extrêmes dans les espaces de vie principaux.
 
 ---
 
