@@ -112,6 +112,7 @@
                 <div class="role-body">
                     <h3>🛠️ Compétences acquises</h3>
                     <ul class="skills-list">
+                        <li><strong>Déploiement Réseau Multi-Sites (Ubiquiti UniFi) :</strong> Architecture multi-VLANs, DMZ/Double-NAT maîtrisé, optimisation RF avancée (DFS 100 / 160MHz) et tirage de câblage extérieur étanche pour complexe touristique.</li>
                         <li><strong>Adressage IPv6 Dual-Stack :</strong> Délégation de préfixe FAI, intégration d'adresses ULA (`fddf::/64`) et lien-local.</li>
                         <li><strong>VPN WireGuard :</strong> Routage de tunnels chiffrés sous environnement IPv6 maillé pour l'accès aux réseaux internes.</li>
                         <li><strong>Traefik & SSL/TLS :</strong> Configuration de certificats Let's Encrypt par challenge DNS Cloudflare et durcissement HTTPS (HSTS, TLS 1.2/1.3).</li>
@@ -120,7 +121,19 @@
                     </ul>
 
                     <div class="context-box">
-                        <strong>Contexte :</strong> Sécurisation réseau zero-trust de l'infrastructure homelab et routage inter-sous-réseau sécurisé pour une découpeuse laser industrielle.
+                        <strong>Contexte :</strong> Sécurisation réseau zero-trust de l'infrastructure homelab, routage inter-sous-réseau sécurisé pour une découpeuse laser industrielle, et déploiement sur site d'une infrastructure UniFi multi-bâtiments (Domaine ViaMare).
+                    </div>
+
+                    <div class="troubleshooting-accordion">
+                        <button class="accordion-trigger">
+                            <span>🔍 Cas pratique : Déploiement Réseau UniFi Multi-Bâtiments (Domaine ViaMare)</span>
+                            <span class="arrow"></span>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="incident-meta"><strong>Contexte :</strong> Déploiement d'une infrastructure réseau complète et segmentée sur un domaine en restanques (Maison Principale, Minivilla 70m², Chambres et extension).</div>
+                            <div class="incident-desc"><strong>Architecture :</strong> Double-NAT maîtrisé avec DMZ Livebox, délégation de préfixe IPv6, 4 VLANs étanches avec isolation Hotspots, tuning radio fin (Canal DFS 100 en 160MHz / 2.4GHz IoT), liaison monobrin Cat6/8 avec embases Keystone blindées et étanchéité Drip Loop.</div>
+                            <div class="incident-solution"><strong>Livrables & Chiffrage :</strong> Couverture Wi-Fi 6/7 pérenne, accès de secours UniFi Teleport, FQDN local `unifi.paoloferra.com` et valorisation d'ingénierie (~8h de réalisation). <a href="https://github.com/TucoPF/Homelab-Portfolio/blob/main/2_Deployments_and_Projects/11_ViaMare_Unifi_Deployment.md" target="_blank" style="color: var(--network); text-decoration: underline; margin-top: 8px; display: inline-block;">📄 Consulter le rapport de déploiement complet</a></div>
+                        </div>
                     </div>
 
                     <div class="troubleshooting-accordion">

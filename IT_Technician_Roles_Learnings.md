@@ -18,16 +18,19 @@
 
 ## 2. Administrateur Réseaux & Sécurité (IPv6, VPN & reverse proxy)
 *   **Compétences techniques acquises :**
+    *   *Déploiement Réseau Multi-Sites & Wi-Fi (Ubiquiti UniFi) :* Architecture réseau distribuée sur site (Domaine ViaMare), double-NAT maîtrisé avec DMZ, délégation IPv6, segmentation 4 VLANs étanches avec isolation Hotspots, ingénierie radio (canaux DFS 100 en 160MHz / 2.4GHz unifié IoT) et câblage rigide monobrin avec embases Keystone blindées.
     *   *Routage IPv6 Dual-Stack :* Gestion d'adresses Global Unicast (GUA) déléguées par le FAI, adressage local Unique Local Addresses (ULA en `fddf::/64`) pour l'isolation locale et VPN (WireGuard en `fdfd::/64`).
     *   *Sécurité & Zero-Trust :* Routage inter-VLANs filtré par pare-feu (routeur Weidmüller isolé reliant la découpeuse laser `192.168.100.0/24` au réseau principal). VPN maillé IPv6 (tunnels WireGuard sécurisant les accès d'administration).
     *   *Proxy Inverse & Certificats SSL :* Configuration de Traefik avec challenge DNS Cloudflare (évite d'ouvrir le port 80 pour Let's Encrypt), routage dynamique vers les adresses IPv6 ULA internes, injection de headers de sécurité HTTPS (HSTS, CSP, suppression des signatures serveurs).
     *   *Sécurité Périmétrique & Filtrage :* Configuration de pare-feu applicatifs (`firewalld` avec zones différenciées sous Arch Linux), segmentation de sous-réseaux (pont isolé `vmbr2` et routage via passerelle logicielle nftables).
     *   *Détection d'Intrusion (IPS) :* Déploiement découplé de CrowdSec LAPI (`LXC 114`) avec agent de collecte sur Traefik (`LXC 112`) et bouncer au niveau de la table `raw` `PREROUTING` d'iptables sur l'hôte Proxmox (mise à jour d'IPsets par script toutes les 5 minutes).
 *   **Méthodes d'apprentissage :**
+    *   Déploiement d'infrastructure réseau complète sur site réel (Domaine ViaMare - UCG Ultra, USW-Ultra 60W, U7-Lite, U6-Pro, U6+).
     *   Routage inter-sous-réseau pour l'accès de la découpeuse laser isolée (`192.168.100.101`) vers le NAS.
     *   Configuration d'un script de mise à jour DNS dynamique DDNS IPv6 (`2update-vpn-dns.sh`) recalculant le préfixe dynamique par masque hexadécimal et l'envoyant à l'API Cloudflare.
     *   Mise en place d'un système de blocage géographique (Geoblocking) hors-ligne via intégration de bases de données IP2Location mensuelles.
 *   **Cas pratiques de Troubleshooting :**
+    *   *Déploiement Réseau UniFi Multi-Bâtiments (Domaine ViaMare) :* Couverture et isolation d'un domaine en restanques avec réutilisation de lignes Cat6 transformées en Keystones femelles, contournement du double-NAT Livebox via DMZ, tuning radio différencié (pénétration Minivilla vs débits extrêmes Maison), secours Out-of-Band via Teleport et accès local FQDN `unifi.paoloferra.com`.
     *   *Échec de découverte de voisins IPv6 (NDP/MLD) :* blocage du trafic ping suite à l'activation du multicast snooping de la Freebox Pop. Résolu en forçant le paramètre `mcast_router 2` sur l'interface physique esclave du pont et en configurant les règles ICMPv6 requises dans le pare-feu PVE.
     *   *Race condition Traefik / CrowdSec au boot :* Traefik démarrant sans réseau/LAPI disponible coupait ses middlewares de sécurité et restait actif mais hors-service. Résolu par vérification de journal dans `ExecStartPost` pour forcer le redémarrage automatique en boucle.
     *   *Panique Kernel Wi-Fi 7 (ath12k) :* Crashes système au réveil de veille causés par des micro-sommeils PCIe (ASPM). Résolu par udev rule désactivant l'ASPM sur le chipset spécifique et script de désactivation de l'économie d'énergie radio.
