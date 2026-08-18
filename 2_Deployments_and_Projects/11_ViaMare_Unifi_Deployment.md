@@ -145,6 +145,13 @@ Pour optimiser et professionnaliser davantage l'infrastructure du domaine, une t
 4. **Cohérence Esthétique :** Le design blanc et épuré de la Freebox s'intègre parfaitement avec les équipements blancs UniFi.
 5. **Optimisation Budgétaire :** Rationalisation du coût récurrent de l'abonnement FAI par rapport à l'offre Orange en cours.
 
+### ⚡ Protection Électrique & Résilience Réseau (Onduleur / UPS)
+Le secteur géographique de Palombaggia étant fréquemment exposé aux micro-coupures de courant, aux baisses de tension et aux perturbations orageuses :
+* **Recommandation Technique :** Installation d'un onduleur compact (**UPS Line-Interactive** de 650 à 850 VA, type Eaton ou APC) dans le garage pour alimenter la box FAI, l'UCG Ultra et le switch USW Ultra.
+* **Bénéfices Clés :**
+  * **Continuité de Service (Autonomie) :** L'infrastructure réseau complète consommant moins de 45W, un onduleur de 650VA garantit entre **45 et 90 minutes de connectivité ininterrompue** en cas de coupure secteur.
+  * **Intégrité Matérielle :** Protection de la mémoire flash eMMC de l'UCG Ultra contre les arrêts brutaux et lissage des variations de tension du réseau électrique corse.
+
 ---
 
 ## 🔮 Roadmap / Phase 2 (Extension Haute : Bergeries & Chalet)
