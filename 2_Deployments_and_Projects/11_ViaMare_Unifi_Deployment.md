@@ -35,9 +35,10 @@ Déploiement complet d'une infrastructure réseau et Wi-Fi basée sur l'écosyst
 ---
 
 ## 🔌 Topologie WAN & Adressage
-Le routeur UCG Ultra est positionné en cascade (double NAT) derrière la Livebox FAI :
+Le routeur UCG Ultra est positionné en cascade (double NAT maîtrisé) derrière la Livebox FAI :
 * **Liaison WAN :** Port LAN 4 (1 Gbps) de la Livebox vers le port WAN (2.5 Gbps) du UCG Ultra.
 * **Adressage WAN (UCG) :** `192.168.1.254` (IP Statique configurée sur la Livebox, réseau `192.168.1.1`).
+* **Configuration DMZ :** La Livebox est configurée avec une **DMZ pointant vers l'IP `192.168.1.254`** de l'UCG Ultra, transférant l'ensemble des flux entrants non sollicités directement au pare-feu UniFi.
 * **Support IPv6 :** Délégation de préfixe active depuis la Livebox vers le VLAN principal du UCG (`2a01:cb1c:xxxx:xxxx::/64` [Masqué]).
 
 ---
@@ -131,3 +132,23 @@ Le paramétrage des canaux et des largeurs de bande a été calibré pour concil
 * **Investissement Matériel & Consommables :** **716,97 €** *(constaté sur factures)*
 * **Prestation Technique Facturée (avec remise 75% formation/famille) :** **120,00 €** *(au lieu de 480,00 €)*
 * **Coût Global Réel du Projet :** **836,97 € TTC** *(au lieu de 1 196,97 €)*
+
+---
+
+## 💡 Recommandations Techniques & Évolutions Stratégiques
+
+### 🔄 Migration FAI Envisagée : Transition Orange (Livebox) vers Free (Freebox Pop / Ultra)
+Pour optimiser et professionnaliser davantage l'infrastructure du domaine, une transition vers une offre Freebox (Pop ou Ultra) est recommandée pour les raisons techniques suivantes :
+1. **Mode Bridge Natif & Suppression du Double-NAT :** Contrairement à la Livebox qui impose un double-NAT contourné par DMZ, la Freebox dispose d'un véritable **mode Bridge**. L'UCG Ultra obtient ainsi directement l'IP publique WAN sur son interface, assurant une délégation totale du routage et simplifiant grandement les tunnels VPN.
+2. **Débit WAN 2.5 Gbps :** La présence d'un port **2.5 GbE** sur la Freebox (Pop/Ultra) permet d'exploiter pleinement le port WAN 2.5 GbE du UCG Ultra, levant le goulet d'étranglement de 1 Gbps imposé par la Livebox. Même avec un switch USW en 1 Gbps, l'agrégation de trafic multi-clients profitera de ce surplus de débit.
+3. **Gain Thermique & Économie d'Énergie :** En mode bridge, la désactivation du Wi-Fi et des modules applicatifs de la box FAI réduit la chauffe et la consommation électrique au sein du garage.
+4. **Cohérence Esthétique :** Le design blanc et épuré de la Freebox s'intègre parfaitement avec les équipements blancs UniFi.
+5. **Optimisation Budgétaire :** Rationalisation du coût récurrent de l'abonnement FAI par rapport à l'offre Orange en cours.
+
+---
+
+## 🔮 Roadmap / Phase 2 (Extension Haute : Bergeries & Chalet)
+* **Objectif :** Raccorder et couvrir en Wi-Fi les bâtis supérieurs situés en restanques (2 Bergeries avec 2 chambres/1 SdB et le Chalet avec 1 chambre).
+* **Options Techniques d'Acheminement :**
+  * *Liaison Filaire (Recommandée) :* Tirage d'une ligne extérieure Cat6a ou fibre optique sous fourreau étanche pour garantir une immunité totale contre les orages et une bande passante sans compromis.
+  * *Pont Radio Sans-Fil (PtP) :* Déploiement d'un pont sans-fil dédié (ex: Ubiquiti Building Bridge UBB ou NanoStation 5AC) pour franchir la distance et le dénivelé sans nécessiter de tranchée technique.
