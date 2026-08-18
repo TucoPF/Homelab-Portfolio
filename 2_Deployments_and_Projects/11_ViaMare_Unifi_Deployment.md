@@ -104,6 +104,14 @@ Le paramétrage des canaux et des largeurs de bande a été calibré pour concil
 
 ---
 
+## 🌐 Résolution DNS Locale & Accès FQDN
+* **Enregistrement DNS Dédié :** Configuration du sous-domaine `unifi.paoloferra.com` pointant vers l'IP locale du contrôleur UCG Ultra (`10.0.0.1`).
+* **Bénéfice Technique :**
+  * Permet d'accéder directement au tableau de bord UniFi OS via un nom de domaine qualifié (FQDN) propre depuis le réseau local (LAN) et les clients VPN, évitant la mémorisation d'adresses IP brutes et facilitant la validation des certificats HTTPS.
+* **Architecture IPv6 (Enregistrement AAAA) :** Le pointeur est actuellement restreint à l'enregistrement IPv4 (`10.0.0.1`). L'ajout de l'enregistrement `AAAA` (IPv6) est prévu lors de l'extension de la délégation de préfixe au sous-réseau de management ou de l'attribution d'une IPv6 ULA au contrôleur.
+
+---
+
 ## 💼 Chiffrage & Valorisation du Projet (Simulation Devis)
 
 ### 1. Valorisation de la Main d'Œuvre & Prestation Technique
