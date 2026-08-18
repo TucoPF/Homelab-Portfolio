@@ -165,20 +165,19 @@ Le secteur géographique de Palombaggia étant fréquemment exposé aux micro-co
 * **Cheminement :** Départ depuis le switch USW-Ultra dans le garage $\rightarrow$ traversée du garage $\rightarrow$ sortie en façade arrière au niveau de la **cuisine extérieure** $\rightarrow$ tranchée avec enfouissement d'une gaine technique étanche (câble Cat6a extérieur résistant aux UV / intempéries) montant jusqu'au niveau des bergeries.
 * **Point de Fixation Stratégique :** Installation et fixation de l'AP extérieur sur l'**arbre situé directement en face des Bergeries**.
 
-### 3. Choix Matériel & Ingénierie de Couverture (U7 Outdoor)
-* **Équipement Prévu :** **Ubiquiti UniFi U7 Outdoor** (ou **U7 Pro Outdoor**) avec ses **antennes externes directionnelles / sectorielles**.
+### 3. Choix Matériel & Ingénierie de Couverture (U6-Mesh)
+* **Équipement Retenu :** **Ubiquiti UniFi U6-Mesh** (Wi-Fi 6).
 * **Rationale Technique :**
-  * **Étanchéité & Résistance Climatique :** Châssis certifié IPX6 conçu pour les conditions extérieures méditerranéennes.
-  * **Rayonnement Double Portée :** L'utilisation des antennes externes à fort gain permet d'arroser efficacement les Bergeries à courte distance tout en projetant un faisceau puissant et direct vers le Chalet situé 20 mètres plus haut en surplomb, éliminant ainsi le besoin d'une seconde tranchée coûteuse.
+  * **Étanchéité & Format Compact :** Boîtier cylindrique discret en aluminium certifié IPX5 conçu pour l'extérieur.
+  * **Performance & Pénétration Radio :** Radio 5 GHz en **MIMO 4x4** (largeur 80/160 MHz) avec une puissance d'émission de 26 dBm, garantissant un débit utile supérieur à **200 Mbps réels** à l'intérieur du Chalet (situé à 20 mètres en champ libre).
+  * **Étanchéité Native :** Équipé d'un presse-étoupe souple en caoutchouc sous la base, associé à une boucle d'égouttement (*Drip Loop*) le long de l'arbre.
 
-### 4. Estimation Budgétaire Prévisionnelle (Phase 2)
-| Poste de Dépense | Description / Rôle | Quantité | Prix Estimatif TTC |
-| :--- | :--- | :---: | :---: |
-| **Ubiquiti UniFi U7 Outdoor** | AP Wi-Fi 7 extérieur avec antennes externes | 1 | ~310,00 € |
-| **Câble Cat6a Extérieur Étanche (UV)** | Couronne 50-100m pour pose enterrée | 1 lot | ~60,00 € |
-| **Gaine Technique / Fourreau TPC Ø40mm** | Fourreau de protection pour tranchée | 1 couronne | ~40,00 € |
-| **Protection Foudre (Surge Protector)** | Parasurtenseur Ethernet (Ubiquiti ETH-SP-G2) | 1 | ~20,00 € |
-| **Accessoires de Fixation & Visserie** | Sangles pour mât / arbre et étanchéité | Lot | ~20,00 € |
-| **Sous-total Matériel & Fournitures** | | | **~450,00 €** |
-| **Main d'Œuvre (Tranchée, Tirage, Pose, Config)** | ~7.0 h à 60 €/h *(brut : 420 €)* avec **remise 75%** | 7.0 h | **105,00 €** |
-| **Total Estimé Phase 2 (Clé en main)** | | | **~555,00 € TTC** |
+### 4. Estimation Budgétaire Réelle (Phase 2)
+| Poste de Dépense | Source / Fournisseur | Rôle / Détail | Quantité | Prix TTC |
+| :--- | :--- | :--- | :---: | :---: |
+| **Panier Amazon Déploiement** | Amazon | U6-Mesh + Câble rigide Cat8 AWG22 20m + 2 Keystones | 1 lot | **290,59 €** |
+| **Tube PEHD Ø32mm (25m)** | Magasin Local (Weldom) | Fourreau étanche anti-écrasement / anti-UV | 1 rouleau | ~28,00 € |
+| **Fournitures d'Étanchéité** | Quincaillerie | Silicone extérieur, sangle arbre, visserie | Lot | ~15,00 € |
+| **Sous-total Matériel & Fournitures** | | | | **~333,59 €** |
+| **Main d'Œuvre (Tranchée, Tirage, Keystones, Config)** | 5.0 h à 60 €/h *(brut : 300 €)* | **Remise 75%** Formation IT / Famille | 5.0 h | **75,00 €** |
+| **Total Global Phase 2 (Clé en main)** | | | | **~408,59 € TTC** |
