@@ -100,3 +100,33 @@ Le paramétrage des canaux et des largeurs de bande a été calibré pour concil
 ## 🌍 Accès Distant & Secours (Out-of-Band)
 * **Accès Primaire (Intégration Homelab) :** Client VPN WireGuard configuré sur l'UCG Ultra pour initier un tunnel persistant vers le serveur `CT111` central. Cela contourne le NAT de la Livebox et permet un accès sécurisé aux réseaux d'administration depuis l'extérieur.
 * **Solution de Secours (Fallback) :** Le service **UniFi Teleport** est activé et rattaché au Cloud UniFi (`unifi.ui.com`), garantissant un accès d'urgence Out-of-Band via smartphone si la liaison principale est coupée.
+
+---
+
+## 💼 Chiffrage & Valorisation du Projet (Simulation Devis)
+
+### 1. Valorisation de la Main d'Œuvre & Prestation Technique
+| Poste d'Intervention | Description de la Prestation | Volume Horaire | Taux Horaire | Total HT |
+| :--- | :--- | :---: | :---: | :---: |
+| **Ingénierie & Sourcing** | Audit du site, dimensionnement matériel et plan d'architecture | 2.0 h | 60 € | 120 € |
+| **Chantier Physique & Câblage** | Tirage Cat6, perçages muraux, pose des keystones et fixation des APs | 3.0 h | 60 € | 180 € |
+| **Configuration & Optimisation** | Initialisation, VLANs, IPv6, Zones Firewall, RF Tuning & Teleport | 3.0 h | 60 € | 180 € |
+| **Sous-total Prestation** | | **8.0 h** | | **480 €** |
+| **Remise Formation (50%)** | *Application de la réduction dans le cadre de la formation Technicien Informatique* | | | **-240 €** |
+| **Total Prestation Main d'Œuvre** | | | | **240 €** |
+
+### 2. Matériel & Équipements Déployés
+| Désignation Matériel | Rôle & Emplacement | Quantité | Prix Unit. Indicatif | Total Estimatif |
+| :--- | :--- | :---: | :---: | :---: |
+| **UniFi Cloud Gateway Ultra** | Routeur / Contrôleur central (Garage) | 1 | 120 € | 120 € |
+| **UniFi Switch Ultra 60W** | Switch PoE centralisé (Garage) | 1 | 160 € | 160 € |
+| **Ubiquiti U7-Lite** | Point d'accès Wi-Fi 7 (Maison Principale) | 1 | 120 € | 120 € |
+| **Ubiquiti U6-Pro** | Point d'accès Wi-Fi 6 MIMO 4x4 (Minivilla) | 1 | 160 € | 160 € |
+| **Ubiquiti U6+** | Point d'accès Wi-Fi 6 (Chambre en contrebas) | 1 | 110 € | 110 € |
+| **Consommables & Câblage** | Câble Cat6, embases Keystone, visserie/fixations | Lot | 50 € | 50 € |
+| **Total Matériel & Consommables** | | | | **720 €** |
+
+### 📊 Synthèse Globale du Chantier
+* **Investissement Matériel & Consommables :** ~720 €
+* **Prestation Technique Facturée (avec remise 50% formation) :** 240 € *(au lieu de 480 €)*
+* **Coût Global du Projet :** **~960 €** *(au lieu de 1 200 €)*
