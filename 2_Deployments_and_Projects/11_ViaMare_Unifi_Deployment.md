@@ -112,8 +112,8 @@ Le paramétrage des canaux et des largeurs de bande a été calibré pour concil
 | **Chantier Physique & Câblage** | Tirage Cat6, perçages muraux, pose des keystones et fixation des APs | 3.0 h | 60 € | 180 € |
 | **Configuration & Optimisation** | Initialisation, VLANs, IPv6, Zones Firewall, RF Tuning & Teleport | 3.0 h | 60 € | 180 € |
 | **Sous-total Prestation** | | **8.0 h** | | **480 €** |
-| **Remise Formation (50%)** | *Application de la réduction dans le cadre de la formation Technicien Informatique* | | | **-240 €** |
-| **Total Prestation Main d'Œuvre** | | | | **240 €** |
+| **Remise Formation / Famille (75%)** | *Application de la réduction pédagogique & cadre familial* | | | **-360 €** |
+| **Total Prestation Main d'Œuvre** | | | | **120 €** |
 
 ### 2. Matériel & Équipements Déployés (Factures Réelles)
 | Désignation Matériel | Fournisseur / Source | Rôle & Emplacement | Quantité | Prix Réel TTC |
@@ -129,5 +129,5 @@ Le paramétrage des canaux et des largeurs de bande a été calibré pour concil
 
 ### 📊 Synthèse Globale du Chantier
 * **Investissement Matériel & Consommables :** **716,97 €** *(constaté sur factures)*
-* **Prestation Technique Facturée (avec remise 50% formation) :** **240,00 €** *(au lieu de 480,00 €)*
-* **Coût Global Réel du Projet :** **956,97 € TTC** *(au lieu de 1 196,97 €)*
+* **Prestation Technique Facturée (avec remise 75% formation/famille) :** **120,00 €** *(au lieu de 480,00 €)*
+* **Coût Global Réel du Projet :** **836,97 € TTC** *(au lieu de 1 196,97 €)*
