@@ -8,9 +8,9 @@ Déploiement complet d'une infrastructure réseau basée sur l'écosystème **Ub
 * **Routeur / Contrôleur :** UniFi Cloud Gateway (UCG) Ultra
 * **Switching :** UniFi Switch (USW) Ultra avec alimentation 60W
 * **Points d'Accès (APs) :**
-  * `AP-Maison` (Maison Principale) : Modèle à confirmer (U6-Pro / U6+ / U7-Lite)
-  * `AP-Chambre` (Bergeries / Chambres) : Modèle à confirmer (U6-Pro / U6+ / U7-Lite)
-  * `AP-Bungalow` (Chalet / Bungalow) : Modèle à confirmer (U6-Pro / U6+ / U7-Lite)
+  * `AP-Maison` (Maison Principale) : **U7-Lite**
+  * `AP-Chambre` (Bergeries / Chambres) : **U6+**
+  * `AP-Bungalow` (Maisonnette 70m² / "Minivilla") : **U6-Pro**
 * **Périphériques Filaires :** 1x Smart TV connectée en RJ45 sur le USW Ultra.
 
 ## 🔌 Topologie Logique & Adressage WAN
@@ -37,11 +37,11 @@ Le réseau interne est rigoureusement segmenté en 4 réseaux (VLANs) distincts 
 * **Réseaux Wi-Fi Diffusés :** `ViaMare`
 * **Groupes d'APs assignés :** `AP-Maison` et `AP-Chambre`.
 
-### 3. VLAN 20 ("Lan-Bungalow") - `20.20.20.0/24`
+### 3. VLAN 20 ("Lan-Bungalow" / "Minivilla") - `20.20.20.0/24`
 * **Type de Zone :** Hotspots (Isolation des hôtes).
 * **Réseaux Wi-Fi Diffusés :** `ViaMare`
-* **Groupes d'APs assignés :** `AP-Bungalow` uniquement.
-*(Note architecturale : L'utilisation du même SSID "ViaMare" sur un groupe d'APs spécifique permet de placer de façon transparente les locataires du Bungalow dans un VLAN complètement isolé).*
+* **Groupes d'APs assignés :** `AP-Bungalow` (Minivilla) uniquement.
+*(Note architecturale : L'utilisation du même SSID "ViaMare" sur ce point d'accès spécifique permet de placer de façon transparente les locataires de la Minivilla dans un VLAN complètement isolé).*
 
 ### 4. VLAN 30 ("Lan-Invité") - `30.30.30.0/24`
 * **Type de Zone :** Hotspots (Isolation complète des invités).
