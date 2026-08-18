@@ -115,18 +115,19 @@ Le paramétrage des canaux et des largeurs de bande a été calibré pour concil
 | **Remise Formation (50%)** | *Application de la réduction dans le cadre de la formation Technicien Informatique* | | | **-240 €** |
 | **Total Prestation Main d'Œuvre** | | | | **240 €** |
 
-### 2. Matériel & Équipements Déployés
-| Désignation Matériel | Rôle & Emplacement | Quantité | Prix Unit. Indicatif | Total Estimatif |
-| :--- | :--- | :---: | :---: | :---: |
-| **UniFi Cloud Gateway Ultra** | Routeur / Contrôleur central (Garage) | 1 | 120 € | 120 € |
-| **UniFi Switch Ultra 60W** | Switch PoE centralisé (Garage) | 1 | 160 € | 160 € |
-| **Ubiquiti U7-Lite** | Point d'accès Wi-Fi 7 (Maison Principale) | 1 | 120 € | 120 € |
-| **Ubiquiti U6-Pro** | Point d'accès Wi-Fi 6 MIMO 4x4 (Minivilla) | 1 | 160 € | 160 € |
-| **Ubiquiti U6+** | Point d'accès Wi-Fi 6 (Chambre en contrebas) | 1 | 110 € | 110 € |
-| **Consommables & Câblage** | Câble Cat6, embases Keystone, visserie/fixations | Lot | 50 € | 50 € |
-| **Total Matériel & Consommables** | | | | **720 €** |
+### 2. Matériel & Équipements Déployés (Factures Réelles)
+| Désignation Matériel | Fournisseur / Source | Rôle & Emplacement | Quantité | Prix Réel TTC |
+| :--- | :--- | :--- | :---: | :---: |
+| **UniFi Cloud Gateway Ultra** | Amazon (GETIC SIA) | Routeur / Contrôleur central (Garage) | 1 | 139,89 € |
+| **UniFi Switch Ultra (USW-Ultra)** | Ubiquiti Store Europe | Switch PoE centralisé (Garage) | 1 | 176,40 € |
+| **Ubiquiti U6-Pro** | eBay | Point d'accès Wi-Fi 6 MIMO 4x4 (Minivilla) | 1 | 119,69 € |
+| **Ubiquiti U6+** | Amazon (BATNA Sp. z o.o.) | Point d'accès Wi-Fi 6 (Chambre en contrebas) | 1 | 120,09 € |
+| **Ubiquiti U7-Lite** | Ubiquiti Store *(Estimatif)* | Point d'accès Wi-Fi 7 (Maison Principale) | 1 | 115,00 € |
+| **4x Modules Keystone RJ45 Cat6a** | Amazon (HB-DIGITAL) | Terminaisons femelles blindées STP | 1 lot | 15,90 € |
+| **Câblage Cat6 & Fixations** | Fournitures diverses | Consommables et visserie | Lot | 30,00 € |
+| **Total Matériel & Fournitures** | | | | **716,97 €** |
 
 ### 📊 Synthèse Globale du Chantier
-* **Investissement Matériel & Consommables :** ~720 €
-* **Prestation Technique Facturée (avec remise 50% formation) :** 240 € *(au lieu de 480 €)*
-* **Coût Global du Projet :** **~960 €** *(au lieu de 1 200 €)*
+* **Investissement Matériel & Consommables :** **716,97 €** *(constaté sur factures)*
+* **Prestation Technique Facturée (avec remise 50% formation) :** **240,00 €** *(au lieu de 480,00 €)*
+* **Coût Global Réel du Projet :** **956,97 € TTC** *(au lieu de 1 196,97 €)*
