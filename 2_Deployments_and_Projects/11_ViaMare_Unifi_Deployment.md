@@ -8,16 +8,16 @@ Déploiement complet d'une infrastructure réseau basée sur l'écosystème **Ub
 * **Routeur / Contrôleur :** UniFi Cloud Gateway (UCG) Ultra
 * **Switching :** UniFi Switch (USW) Ultra avec alimentation 60W
 * **Points d'Accès (APs) :**
-  * `AP-Maison` : U6-Pro (Maison Principale)
-  * `AP-Chambre` : U6+ (Bergeries / Chambres)
-  * `AP-Bungalow` : U7-Lite (Chalet / Bungalow)
+  * `AP-Maison` (Maison Principale) : Modèle à confirmer (U6-Pro / U6+ / U7-Lite)
+  * `AP-Chambre` (Bergeries / Chambres) : Modèle à confirmer (U6-Pro / U6+ / U7-Lite)
+  * `AP-Bungalow` (Chalet / Bungalow) : Modèle à confirmer (U6-Pro / U6+ / U7-Lite)
 * **Périphériques Filaires :** 1x Smart TV connectée en RJ45 sur le USW Ultra.
 
 ## 🔌 Topologie Logique & Adressage WAN
 Le routeur UCG Ultra est positionné en cascade (double NAT) derrière la LiveBox, mais le trafic est structuré pour maximiser la connectivité :
 * **Liaison Physique :** Port LAN 4 (1Gbps) de la LiveBox relié au port WAN (2.5Gbps) du UCG Ultra.
 * **Adressage WAN (UCG) :** `192.168.1.254` (IP Statique assignée par la LiveBox, réseau `192.168.1.1`).
-* **Support IPv6 :** Délégation de préfixe active depuis la LiveBox vers le VLAN principal du UCG (`2a01:cb1c:41:86df::/64`).
+* **Support IPv6 :** Délégation de préfixe active depuis la LiveBox vers le VLAN principal du UCG (`2a01:cb1c:xxxx:xxxx::/64` [Masqué]).
 
 ## ⚙️ Configuration Réseau UniFi (VLANs & SSIDs)
 Le réseau interne est rigoureusement segmenté en 4 réseaux (VLANs) distincts afin de garantir l'isolation et la performance :
@@ -32,7 +32,7 @@ Le réseau interne est rigoureusement segmenté en 4 réseaux (VLANs) distincts 
   * AP-Maison : `10.0.0.40`
 
 ### 2. VLAN 10 ("Lan-Maison") - `10.10.10.0/24`
-* **IPv6 :** `2a01:cb1c:41:86df::/64` (Bénéficie de la délégation de préfixe).
+* **IPv6 :** `2a01:cb1c:xxxx:xxxx::/64` (Bénéficie de la délégation de préfixe).
 * **Type de Zone :** Réseau Interne (Corporate).
 * **Réseaux Wi-Fi Diffusés :** `ViaMare`
 * **Groupes d'APs assignés :** `AP-Maison` et `AP-Chambre`.
