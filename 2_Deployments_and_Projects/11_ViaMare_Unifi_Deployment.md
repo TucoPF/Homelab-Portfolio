@@ -163,3 +163,15 @@ Pour optimiser et professionnaliser davantage l'infrastructure du domaine, une t
 * **Rationale Technique :**
   * **Étanchéité & Résistance Climatique :** Châssis certifié IPX6 conçu pour les conditions extérieures méditerranéennes.
   * **Rayonnement Double Portée :** L'utilisation des antennes externes à fort gain permet d'arroser efficacement les Bergeries à courte distance tout en projetant un faisceau puissant et direct vers le Chalet situé 20 mètres plus haut en surplomb, éliminant ainsi le besoin d'une seconde tranchée coûteuse.
+
+### 4. Estimation Budgétaire Prévisionnelle (Phase 2)
+| Poste de Dépense | Description / Rôle | Quantité | Prix Estimatif TTC |
+| :--- | :--- | :---: | :---: |
+| **Ubiquiti UniFi U7 Outdoor** | AP Wi-Fi 7 extérieur avec antennes externes | 1 | ~310,00 € |
+| **Câble Cat6a Extérieur Étanche (UV)** | Couronne 50-100m pour pose enterrée | 1 lot | ~60,00 € |
+| **Gaine Technique / Fourreau TPC Ø40mm** | Fourreau de protection pour tranchée | 1 couronne | ~40,00 € |
+| **Protection Foudre (Surge Protector)** | Parasurtenseur Ethernet (Ubiquiti ETH-SP-G2) | 1 | ~20,00 € |
+| **Accessoires de Fixation & Visserie** | Sangles pour mât / arbre et étanchéité | Lot | ~20,00 € |
+| **Sous-total Matériel & Fournitures** | | | **~450,00 €** |
+| **Main d'Œuvre (Tranchée, Tirage, Pose, Config)** | ~7.0 h à 60 €/h *(brut : 420 €)* avec **remise 75%** | 7.0 h | **105,00 €** |
+| **Total Estimé Phase 2 (Clé en main)** | | | **~555,00 € TTC** |
