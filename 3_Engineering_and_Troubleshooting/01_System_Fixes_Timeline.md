@@ -758,7 +758,6 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
   1. **VPN Endpoint Resolution:** Resolved the Wintun timeout by ensuring the WireGuard client reconnects cleanly to the correct IPv6 GUA endpoint.
   2. **Architecture Decision (Static Routes):** Decided against global `sysctl` modifications or NAT Masquerade to maintain Zero-Trust architectural purity. Chose to implement static routes manually in `/etc/network/interfaces` for any Proxmox node/client needing direct access to the `fdfd::/112` VPN subnet.
 
-<<<<<<< HEAD
 ## Date: 25 July 2026
 
 ### Issue 53: Proxmox Host Boot Delay & Transition to Native ZFS over iSCSI SAN (`Remote-pool` / `Local-pool`)
@@ -820,3 +819,23 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
   4. Resolved a transient IPv6 NDP cache bug on the bridge during testing (by forcing an inbound ping from `fddf::133`).
   5. Compiled the patched `kio_smb.so` via `cmake` on the VM and replaced the system module.
 * **Status:** Verified complete resolution of the infinite loop. Prepared an upstream KDE Bug Report and `.patch` file for community submission.
+
+## Date: 19 August 2026
+
+### Issue 57: Proxmox Backup Server (PBS) Datastore Capacity Exhaustion & Unscheduled Garbage Collection
+* **Symptoms:** The PBS dedicated NVMe datastore (`/mnt/datastore/Backups` on `nvme1n1p1`, 238.5 GB formatted XFS) on `skynet` reached 72% capacity (170 GB used, 69 GB free), threatening disk depletion under daily cluster backup jobs.
+* **Diagnosis:** 
+  1. **Missing Garbage Collection (GC) Schedule:** `/etc/proxmox-backup/datastore.cfg` lacked a `gc-schedule`. While the daily prune job (`s-f079708a-595c`) deleted snapshot metadata and manifests, unreferenced binary chunks in `/mnt/datastore/Backups/.chunks/` (165 GB) were never marked and swept from the filesystem.
+  2. **Aggressive Retention on Inactive/Static Templates:** Daily cluster backup jobs (`backup-5591705a-b4ce` in `/etc/pve/jobs.cfg`) backed up all guests nightly (`all 1`), including heavy, unchanging Windows/Debian templates (`vm/400`, `vm/500`, `vm/200`, `ct/100`), generating 12 redundant snapshots per template.
+  3. **Broad Global Retention Window:** Global prune retention (`keep-last 7, keep-weekly 4, keep-monthly 2`) retained ~13 snapshots per guest across 26 active/stale guest groups.
+* **Fix Applied:** 
+  1. Configured an automated recurring Garbage Collection schedule on the `Backups` datastore (`sat 18:15`).
+  2. Pruned all static template backup groups (`ct/100`, `vm/200`, `vm/400`, `vm/500`) and decommissioned test VMs (`vm/2222`, `vm/3333`, `vm/4444`, `vm/204`, etc.) down to exactly 1 baseline snapshot.
+  3. Excluded template IDs (`400, 500, 100, 200`) from the daily cluster-wide vzdump backup job in `/etc/pve/jobs.cfg`.
+  4. Lowered global datastore prune retention to `keep-last 3` (retaining 3 daily + 4 weekly + 2 monthly = ~7–9 recovery points for active services).
+* **Implementation:**
+  1. **PBS Prune & GC Configuration:** Set `gc-schedule: sat 18:15` and updated prune job `s-f079708a-595c` with `keep-last 3`.
+  2. **PVE Cluster Job Exclusion:** Edited Datacenter backup job in `/etc/pve/jobs.cfg` to set `exclude 400,500,100,200`.
+  3. **Manual Sweep Execution:** Executed immediate Prune and Garbage Collection runs via PBS.
+* **Verification:** Datastore usage dropped to 155 GB (66% used, 84 GB free), with an additional 18.74 GB (7,681 unreferenced chunks) queued in PBS's 24-hour safety grace period to be permanently swept on the next GC run, bringing expected steady-state usage down to ~136 GB (~57% used, ~102 GB free headroom).
+
