@@ -839,3 +839,17 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
   3. **Manual Sweep Execution:** Executed immediate Prune and Garbage Collection runs via PBS.
 * **Verification:** Datastore usage dropped to 155 GB (66% used, 84 GB free), with an additional 18.74 GB (7,681 unreferenced chunks) queued in PBS's 24-hour safety grace period to be permanently swept on the next GC run, bringing expected steady-state usage down to ~136 GB (~57% used, ~102 GB free headroom).
 
+## Date: 25 September 2026
+
+### Issue 58: WireGuard Handshake Stagnation & Dynamic IPv6 Source Address Misrouting (RFC 6724)
+* **Symptoms:** The WireGuard VPN connection randomly stalled and dropped incoming handshakes (affecting client connections like T800). Restarting WireGuard temporarily restored access, but the tunnel would eventually freeze again upon peer roaming, sleep/resume cycles, or rekey intervals.
+* **Diagnosis:** 
+  1. **IPv6 Source Address Selection (RFC 6724):** CT 111 possessed two IPv6 global addresses on `eth0`: the primary SLAAC address (`...:29e0:...`) and the delegated secondary GUA (`...:29e1::111`). When Linux kernel WireGuard received active incoming packets, it echoed responses via `IPV6_PKTINFO`. However, whenever the tunnel was idle, rekeying (`REKEY_AFTER_TIME = 120s`), or the socket re-evaluated routing, the kernel default route (`proto ra metric 1024`) selected the primary SLAAC address as the source IP (`src 2a01:e0a:d6f:29e0:...`). The Freebox dropped these unsolicited packets (or clients rejected them due to endpoint IP mismatch), causing handshake deadlocks.
+  2. **Hardcoded GUA at Boot:** `secondary-ipv6.service` hardcoded `2a01:e0a:d6f:29e1::111` instead of dynamically learning the prefix from Freebox Router Advertisements (RA).
+  3. **Toothless Watchdog:** The existing `wireguard-watchdog.sh` only performed a passive `ss -u -l -n | grep :11111` socket check. Because UDP sockets remain listening (`UNCONN`) even when routing or sessions fail, the watchdog never triggered.
+* **Fix Applied:** 
+  1. **Dynamic Route Pinning:** Updated `/usr/local/bin/update-vpn-dns.sh` to inject a prioritized default route (`ip -6 route replace default via "${FREEBOX_LLA}" dev "${INTERFACE}" metric 512 src "${NEW_IP}"`) immediately after deriving the dynamic secondary GUA from the RA.
+  2. **Boot Architecture Unification:** Purged the hardcoded public GUA from `/etc/systemd/system/secondary-ipv6.service`. Retained only the static homelab ULA (`fddf::111/64`) and chained execution directly into `update-vpn-dns.sh` to derive the GUA and route dynamically on boot.
+  3. **Active Watchdog Refactor:** Overhauled `/usr/local/bin/wireguard-watchdog.sh` to ping the Freebox link-local address (maintaining the Freebox hardware NDP table in `REACHABLE` state), verify that the `metric 512` route is present, and ensure `wg0` is responsive.
+* **Verification:** Confirmed via CLI that `ip -6 route show default` actively prioritizes `metric 512 src 2a01:e0a:d6f:29e1::111`, `ip -6 route get` to remote endpoints correctly resolves to the secondary GUA, Freebox NDP is in `REACHABLE` state, and internal homelab ULA routing (`fddf::/64`) remains fully isolated and preserved.
+
