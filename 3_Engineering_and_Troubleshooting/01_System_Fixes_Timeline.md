@@ -865,3 +865,15 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
   3. **IPv6-Only Hardening Asserted for CT 133:** Confirmed deliberate omission of `GROUP lan-4` on personal container `133` (`Paolo-133`) to restrict network surface area exclusively to IPv6.
 * **Verification:** Successfully executed `pve-firewall compile` across the cluster with zero syntax errors. Verified via `ip -6 neigh show` that CT 111, T800, and CT 131/133 maintain persistent `REACHABLE` states without cache expiration drops, and confirmed instant CIFS mounting in KDE Dolphin on laptop T800.
 
+## Date: 03 October 2026
+
+### Issue 60: WireGuard Watchdog Route Selector False-Positive & DDNS Script Concurrency Race
+* **Symptoms:** Active WireGuard VPN connections spontaneously disconnected during active use (e.g. `wg0: Lost carrier` / `wg0: Link DOWN`). System logs revealed that `wg-watchdog.service` was constantly triggering `WARNING: Prioritized default route missing. Triggering update-vpn-dns.sh...` every 3 minutes.
+* **Diagnosis:** 
+  1. **iproute2 Output Formatting Quirk:** The watchdog executed `ip -6 route show default metric 512 | grep -q "metric 512"`. When passing `metric 512` as a selector argument, `iproute2` successfully filtered the route, but omitted the string `metric 512` from the printed line. Consequently, `grep` failed every 3 minutes, falsely concluding that the route was missing.
+  2. **Script Execution Thrashing & Concurrency Race:** Because of this false positive, `update-vpn-dns.sh` ran ~480 times per day. When the hourly `vpn-ddns.service` timer triggered simultaneously with the watchdog, two instances of `update-vpn-dns.sh` executed in parallel, attempting concurrent route replacements and Cloudflare API queries, triggering an interface link flap on `wg0`.
+* **Fix Applied:** 
+  1. **Watchdog Selector Correction:** Updated `/usr/local/bin/wireguard-watchdog.sh` to test `ip -6 route show default | grep -q "metric 512"`, correctly matching the metric string and eliminating the false positive trigger.
+  2. **Mutual Exclusion Lock (`flock`):** Added a non-blocking file lock (`flock -n 200` on `/run/update-vpn-dns.lock`) to `/usr/local/bin/update-vpn-dns.sh` to guarantee that concurrent executions cleanly exit without network interference.
+* **Verification:** Confirmed via `journalctl -u wg-watchdog.service` that the watchdog executes cleanly and silently without triggering warnings or running `update-vpn-dns.sh` when the route is present. Verified that `/run/update-vpn-dns.lock` is created and managed atomically.
+
