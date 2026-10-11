@@ -81,7 +81,7 @@
 *   **Chassis/Enclosure**: Jonsbo N5 NAS/Storage Chassis (Integrated Hot-Swap Backplane)
 *   **OS**: Co-installation native Proxmox VE 9.2.3 & Proxmox Backup Server (Debian GNU/Linux 13 Trixie, kernel `7.0.12-1-pve` / `7.0.14-20-pve`)
 *   **Local IP**: ULA: `fddf::2`
-*   **Onboard NICs**: Onboard Realtek RTL8126 5GbE Controller (`nic0`, PVE Bridge `vmbr0`), 10G 10Gtek PCIe Card (`nic2`, IP: `fddd::2/64` for direct 10G storage link), Qualcomm WCN785x Wi-Fi 7 Controller (`wlp7s0`, disabled)
+*   **Onboard NICs**: Onboard Realtek RTL8126 5GbE Controller (`nic0`, PVE Bridge `vmbr0`), Intel 82599ES 10G SFP+ NIC via M.2 (`nic2`, IP: `fddd::2/64` for direct 10G storage link), Qualcomm WCN785x Wi-Fi 7 Controller (`wlp7s0`, disabled)
 *   **Storage Pool**:
     *   PVE OS & Datastore: 1 TB NVMe (LVM-Thin `local`/`local-lvm` on `nvme0n1` [Samsung 980 Pro])
     *   Backup SSD: 1x 1 TB NVMe SSD (Native Proxmox Backup Server Datastore `Backups` formatted in XFS, on `nvme1n1` mounted at `/mnt/datastore/Backups`)
@@ -97,10 +97,6 @@
 *   **Dedicated Hardware Passthrough**:
     *   **GPU**: AMD Radeon RX 9070 XT (Navi 48) — PCI IDs `1002:7550` & `1002:ab40` (early-binding `vfio-pci`)
     *   **USB Devices**: Logitech USB Receiver (`046d:c543`), CX 2.4G Wireless Receiver (`3554:fa0a`)
-*   **Storage Architecture (Hybrid Tiering)**:
-    *   OS Root `/`: 100 Go sur NVMe hôte Samsung 980 Pro (`/dev/sda2`, BTRFS subvol `@`)
-    *   User Data `/home`: 1000 Go ZVOL sparse sur pool ZFS SAS `Local-pool` (`/dev/sdb1`, BTRFS subvol `@home`)
-    *   I/O Optimization: Bind Mount noyau `/var/cache/tuco` -> `/home/tuco/.cache` sur NVMe pour absorber les écritures aléatoires
 *   **Display & Drivers**: Mesa 26.2.4 (RADV GFX1201 ACO), Wayland KDE Plasma 6, VRR/FreeSync `Automatic`, DP-2 120Hz/240Hz, VA-API VCN 5, `lactd.service` actif
 *   **Roles**: Station de travail quotidienne, Gaming haute performance, Administration centrale Homelab, futur nœud IA locale (ROCm).
 

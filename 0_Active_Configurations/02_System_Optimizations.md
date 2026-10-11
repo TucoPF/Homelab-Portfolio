@@ -34,9 +34,6 @@
 - **Authelia Boot Failure Fix (LXC 113):** Configured a systemd drop-in override at `/etc/systemd/system/authelia.service.d/override.conf` with `Restart=on-failure` and `RestartSec=10s` to ensure recovery from transient boot-time lookup errors. Added `disable_startup_check: true` to the `notifier` block in `/etc/authelia/configuration.yml` to prevent blocking on remote SMTP (`smtp-relay.brevo.com`) connectivity when the DNS/gateway nodes are not yet active during parallel host startup.
 
 ## 🖥️ CachyOS Workstation, Gaming & AI VM (ID: 121)
-- **Hybrid I/O Storage Tiering:**
-  - Dedicated 1000 Go ZVOL on `Local-pool` (skynet ZFS SAS Mirror) formatted in BTRFS (`@home` subvolume) mounted at `/home`.
-  - Kernel Bind Mount `/var/cache/tuco` -> `/home/tuco/.cache` on NVMe root (`/dev/sda2`, BTRFS subvol `@cache` on Samsung 980 Pro) declared in `/etc/fstab`. Eliminates high-frequency random I/O bottlenecks and stuttering on SAS mechanical heads while keeping user documents and configs safe on ZFS.
 - **GPU Control & Telemetry:**
   - AMD Radeon RX 9070 XT passthrough running under `amdgpu` kernel module and Mesa 26.2.4 (RADV GFX1201 ACO compiler).
   - LACT hardware management daemon (`lactd.service`) active for DPM power states, temperature telemetry, and fan curve control.

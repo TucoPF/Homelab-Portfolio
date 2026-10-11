@@ -63,7 +63,7 @@
   - **iSCSI LIO Target (`targetcli`):** `iqn.2024-01.local.homelab:skynet-target` exporting `sda` and `sdd` LUNs over 10G portal `[fddd::2]:3260`.
   - **Proxmox Backup Server:** Datastore `Backups` listening natively on `[fddd::2]:8007` (matrix connects via 10G link)
 - **VMs / Containers:**
-  - **121 (Desktop):** Running, 16 GiB RAM statique, 12 vCPUs type `host`, OS Root 100G (NVMe), User `/home` 1000G (ZVOL ZFS SAS), Passthrough GPU Sapphire Pulse Radeon RX 9070 XT, CachyOS Linux.
+  - **121 (Desktop):** Running, 16 GiB RAM statique, 12 vCPUs type `host`, Passthrough GPU Sapphire Pulse Radeon RX 9070 XT, CachyOS Linux.
 - **Software:**
   - **OS:** Co-installation native Proxmox VE 9.2.3 & Proxmox Backup Server (Debian GNU/Linux 13 Trixie, kernel `7.0.12-1-pve` / `7.0.14-20-pve`)
 
@@ -73,10 +73,6 @@
 - **Dedicated Hardware Passthrough:**
   - **GPU:** Sapphire Pulse AMD Radeon RX 9070 XT (Navi 48, 16 Go VRAM) — IDs PCI `1002:7550` & `1002:ab40`
   - **USB Devices:** Logitech USB Receiver (`046d:c543`), CX 2.4G Wireless Receiver (`3554:fa0a`)
-- **Storage Architecture (Hybrid Tiering):**
-  - OS Root `/`: 100 Go sur NVMe hôte Samsung 980 Pro (`/dev/sda2`, BTRFS subvol `@`)
-  - User Data `/home`: 1000 Go ZVOL sparse sur pool ZFS SAS `Local-pool` (`/dev/sdb1`, BTRFS subvol `@home`)
-  - I/O Optimization: Bind Mount noyau `/var/cache/tuco` -> `/home/tuco/.cache` sur NVMe pour absorber les écritures aléatoires
 - **Display & Drivers:** Mesa 26.2.4 (RADV GFX1201 ACO), Wayland KDE Plasma 6, VRR/FreeSync `Automatic`, DP-2 120Hz/240Hz, VA-API VCN 5, `lactd.service` actif
 - **Role:** Station de travail principale, Gaming haute performance, Administration centrale Homelab, futur nœud IA locale (ROCm).
 
