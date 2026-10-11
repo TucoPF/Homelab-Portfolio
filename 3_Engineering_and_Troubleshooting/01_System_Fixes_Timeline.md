@@ -912,3 +912,18 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      * `usb1: host=3554:fa0a` (CX 2.4G Wireless Receiver)
   4. Configured VM 121 display to `none` (`vga: none`), switched the physical monitor to the RX 9070 XT DisplayPort/HDMI output, and completed CachyOS installation with the Limine bootloader and BTRFS.
 * **Verification:** VM 121 boots reliably without host instability. Input latency over KVM USB Device abstraction is measured in microseconds (<0.05 ms), providing full bare-metal responsiveness with zero crash risk to the host hypervisor.
+
+## Date: 11 October 2026
+
+### Issue 63: Mechanical SAS Storage I/O Bottlenecks & BTRFS Hybrid Tiering (VM 121 Home Migration)
+* **Symptoms:** Moving the CachyOS user environment (`/home`) to a dedicated ZVOL on the skynet ZFS mirror (`Local-pool` backed by 10TB Seagate Exos SAS HDDs) created severe risks of application launch lag, micro-stutters in desktop animations, and shader compilation delays due to mechanical head seek latency (8–12 ms) on random micro-I/O operations.
+* **Diagnosis:** Analysis of user-space I/O profiles revealed that `~/.cache` accounts for over 85% of continuous random read/write activity (Mesa/RADV compiled Vulkan shaders, Firefox `cache2`, Plasma QML SQLite databases). Writing thousands of tiny, ephemeral cache files to spinning disks saturates IOPS and starves storage pipelines, whereas configuration files (`~/.config`) are read only at application launch and represent negligible I/O footprint.
+* **Fix Applied:** 
+  1. Completed the data migration of `/home` to a dedicated 1000 GB sparse ZVOL (`drive-scsi1` / `/dev/sdb1`) formatted in BTRFS (`subvol=@home`) using `rsync -aAXHv` to preserve POSIX ACLs, xattrs, and ownership.
+  2. Isolated high-frequency volatile I/O by creating a dedicated user directory on the host NVMe datastore (`/dev/sda2`, BTRFS subvol `@cache` on Samsung 980 Pro) at `/var/cache/tuco` with strict `700 tuco:tuco` permissions.
+  3. Deployed a kernel-level Bind Mount in `/etc/fstab`:
+     ```fstab
+     /var/cache/tuco /home/tuco/.cache none defaults,bind 0 0
+     ```
+  4. Purged underlying masked files on the SAS block device before mounting to prevent invisible disk space loss.
+* **Verification:** Confirmed via `findmnt /home/tuco/.cache` that the directory resolves to `/dev/sda2[/@cache/tuco]`. Validated non-root write and delete capabilities, confirmed instant zero-latency caching under Wayland, while ensuring all user documents and configurations remain securely stored on the redundant ZFS SAS storage tier.

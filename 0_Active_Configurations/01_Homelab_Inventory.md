@@ -1,6 +1,6 @@
 # Homelab Inventory
 
-> **Note:** Gemini CLI is currently running on **Windows Laptop (T800)**.
+> **Note:** Antigravity CLI / Gemini operates on **Desktop (VM 121)** or inside **CT-1111**.
 
 ## matrix (Proxmox Standalone)
 - **IP Address:** 192.168.1.100 (ULA: fddf::1)
@@ -39,13 +39,13 @@
   - **OS:** Debian GNU/Linux 13 (trixie)
   - **Proxmox VE:** 9.2.3 (running kernel: 7.0.12-1-pve)
 
-## skynet (Proxmox Virtual Environment Node - Upgraded Custom Tower)
+## skynet (Storage & Hybrid Hypervisor Host - Upgraded Custom Tower)
 - **IP Address:** 192.168.1.200 (ULA: `fddf::2`)
 - **Hostname:** skynet
 - **Hardware:**
   - **Form Factor:** Custom ATX Mid-Tower Storage Server
   - **Motherboard:** MSI MAG X870E TOMAHAWK WIFI (MS-7E59)
-  - **CPU:** AMD Ryzen 7 9700X (8 Cores / 16 Threads, SMT Enabled, Socket AM5)
+  - **CPU:** AMD Ryzen 7 9700X (8 Cores / 16 Threads, SMT Enabled, Socket AM5, Granite Ridge)
   - **RAM:** 32 GiB DDR5
   - **HBA Controller:** Broadcom / LSI SAS2308 PCI-Express Fusion-MPT SAS-2 (IT Mode, in slot PCIe_E3 via 30cm extension)
   - **Chassis/Enclosure:** Jonsbo N5 NAS/Storage Chassis (Integrated Hot-Swap Backplane)
@@ -59,37 +59,44 @@
     - `nic1`: Down/Available
     - `nic2`: Intel X520-1 10G SFP+ NIC (connected to M.2_4 slot, direct-attach 10G SFP+ storage link to matrix, MAC: `c4:62:37:0a:d6:42`, IP: `fddd::2/64`)
     - Qualcomm WCN785x Wi-Fi 7 Controller (`wlp7s0`, disabled)
-- **Services (SAN):**
+- **Services (SAN & Backup):**
   - **iSCSI LIO Target (`targetcli`):** `iqn.2024-01.local.homelab:skynet-target` exporting `sda` and `sdd` LUNs over 10G portal `[fddd::2]:3260`.
   - **Proxmox Backup Server:** Datastore `Backups` listening natively on `[fddd::2]:8007` (matrix connects via 10G link)
-- **VMs / Containers:** None
+- **VMs / Containers:**
+  - **121 (Desktop):** Running, 16 GiB RAM statique, 12 vCPUs type `host`, OS Root 100G (NVMe), User `/home` 1000G (ZVOL ZFS SAS), Passthrough GPU Sapphire Pulse Radeon RX 9070 XT, CachyOS Linux.
 - **Software:**
-  - **OS:** Debian GNU/Linux 13 (trixie, Debian 13.5)
-  - **Proxmox VE:** 9.2.3 (running kernel: 7.0.12-1-pve)
+  - **OS:** Co-installation native Proxmox VE 9.2.3 & Proxmox Backup Server (Debian GNU/Linux 13 Trixie, kernel `7.0.12-1-pve` / `7.0.14-20-pve`)
 
-## Nuc (Intel NUC) - Control Node
-- **IPv6 ULA Address:** fddf::3/64 (Static)
-- **IPv4 Address:** 192.168.1.253/24 (Legacy/Debugging)
-- **Hostname:** Nuc
-- **Hardware:**
-  - **Model:** Intel NUC7i3DNHE (Motherboard: NUC7i3DNB)
-  - **CPU:** Intel(R) Core(TM) i3-7100U CPU @ 2.40GHz (2 Cores / 4 Threads)
-  - **GPU:** Intel Corporation HD Graphics 620 (rev 02)
-  - **RAM:** 8 GiB DDR4
-  - **Storage:** SSD
-- **Active Services:** None
-- **Software:**
-  - **OS:** Debian GNU/Linux 13 (trixie, version 13.6, Kernel `6.12.95+deb13-amd64`)
-  - **Network stack:** systemd-networkd & iwd (Wi-Fi `wlan0`, Power Save disabled)
+## Desktop (VM 121 sur skynet) - Primary Workstation, Gaming & AI Node
+- **Guest OS:** CachyOS Linux (Kernel `linux-cachyos`, Limine Bootloader + `limine-snapper-sync`, BTRFS)
+- **Hardware vSpecs:** Q35, UEFI OVMF, 12 vCPUs type `host` (Zen 5 AVX-512), 16 GiB RAM statique, VirtIO SCSI Single IOThreads, `vga: none`
+- **Dedicated Hardware Passthrough:**
+  - **GPU:** Sapphire Pulse AMD Radeon RX 9070 XT (Navi 48, 16 Go VRAM) — IDs PCI `1002:7550` & `1002:ab40`
+  - **USB Devices:** Logitech USB Receiver (`046d:c543`), CX 2.4G Wireless Receiver (`3554:fa0a`)
+- **Storage Architecture (Hybrid Tiering):**
+  - OS Root `/`: 100 Go sur NVMe hôte Samsung 980 Pro (`/dev/sda2`, BTRFS subvol `@`)
+  - User Data `/home`: 1000 Go ZVOL sparse sur pool ZFS SAS `Local-pool` (`/dev/sdb1`, BTRFS subvol `@home`)
+  - I/O Optimization: Bind Mount noyau `/var/cache/tuco` -> `/home/tuco/.cache` sur NVMe pour absorber les écritures aléatoires
+- **Display & Drivers:** Mesa 26.2.4 (RADV GFX1201 ACO), Wayland KDE Plasma 6, VRR/FreeSync `Automatic`, DP-2 120Hz/240Hz, VA-API VCN 5, `lactd.service` actif
+- **Role:** Station de travail principale, Gaming haute performance, Administration centrale Homelab, futur nœud IA locale (ROCm).
 
-## Windows Laptop (T800)
-- **IP Address:** 192.168.1.10 (ULA: fddf::10)
+## Pi (Raspberry Pi 4) - Out-of-Band Emergency VPN Node
+- **IPv6 ULA Address:** `fddf::3/64`
+- **Hostname:** Pi
+- **Hardware:** Raspberry Pi 4 Model B (ARMv8 / 4 Cores)
+- **Active Services:**
+  - **Tailscale:** Nœud passerelle VPN d'urgence Out-of-Band (OOB) garantissant un accès sécurisé distant en cas de panne du CT WireGuard principal ou de la Freebox.
+- **Software:** Raspberry Pi OS Lite (Debian Trixie)
+
+## Windows Laptop (T800) - Nomad Control Node & Admin Redundancy
+- **IP Address:** 192.168.1.10 (ULA: `fddf::10`)
 - **Hostname:** T800
 - **Hardware:**
   - **Model:** HP Spectre x360 2-in-1 Laptop 16-aa0xxx
   - **CPU:** Intel(R) Core(TM) Ultra 7 155H (22 cores/threads)
   - **RAM:** 16 GiB (15.37 GiB usable)
   - **Storage:** 953.9G NVMe (C: drive)
+- **Role:** Nœud d'administration nomade secondaire et redondance de secours.
 - **Software:**
   - **OS:** Windows 11 Home (Famille)
   - **Shell:** PowerShell 7 / cmd

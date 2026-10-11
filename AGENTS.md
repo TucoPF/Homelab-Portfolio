@@ -19,9 +19,9 @@
 *   **Minimal Package Inventory Audit First**: On custom/minimal Linux installs, ALWAYS audit package inventory (`rpm -qa` / `dpkg -l`) and configuration directory presence (e.g. `/usr/share/alsa/ucm2`) BEFORE diagnosing kernel, driver, or firmware issues.
 
 ## 🔐 3. AUTHORIZATION & EXECUTION CONTEXT
-*   **Local Context**: AI is running inside LXC **AI-1111** (`fddf::1111`). All local commands originate here. Use aliases `ssh skynet` and `ssh matrix` to connect to hosts.
-*   **Inside CT-1111 (Sandbox)**: Zero restrictions. AI is absolute master.
-*   **Outside CT-1111 (Remote Nodes)**: 
+*   **Local Context**: AI operates either inside LXC **AI-1111** (`fddf::1111`) or directly inside **Workstation VM Desktop (121)** (`tuco@Desktop`). All local commands originate here. Use aliases `ssh skynet` and `ssh matrix` to connect to hosts.
+*   **Inside CT-1111 & Local Desktop VM**: AI operates with user authorization. Inside CT-1111 sandbox, AI is master. On VM Desktop, execute standard development and administration operations.
+*   **Outside Local Environment (Remote Nodes)**: 
     *   *State-Modifying Actions*: Strictly controlled by the user. Requires explicit validation.
     *   *Non-Sensitive Auditing*: Authorized autonomously via read-only queries (use `sudo`).
     *   *Sensitive Data*: Forbidden to exfiltrate without permission.
@@ -38,12 +38,13 @@
 
 ### 1. Hardware Inventory & Nodes
 
-#### 💻 Windows Laptop (T800) - Control Node
+#### 💻 Windows Laptop (T800) - Nomad Control Node & Admin Redundancy
 *   **Model**: HP Spectre x360 2-in-1 Laptop 16-aa0xxx
 *   **CPU**: Intel(R) Core(TM) Ultra 7 155H (Meteor Lake, 16 Cores / 22 Threads)
 *   **RAM**: 16 GB (15.37 GB usable, remainder for Intel Arc iGPU)
 *   **OS**: Windows 11 Home (Famille)
 *   **Local IP**: ULA: `fddf::10`
+*   **Role**: Secondary / Mobile Administration node, WireGuard / Tailscale roaming client.
 *   **Security**: Windows Defender Firewall active.
 *   **Integrations**: 1Password SSH Agent integration via named pipe. PowerShell profile shortcuts configured.
 
@@ -71,14 +72,14 @@
     *   **VM 500 (Windows-Template-Server)**: Stopped.
 
 
-#### 📦 skynet - Storage & Backup Backend (Upgraded Custom Tower)
+#### 📦 skynet - Storage & Hybrid Hypervisor Host (Upgraded Custom Tower)
 *   **Form Factor**: Custom ATX Mid-Tower Storage Server
 *   **Motherboard**: MSI MAG X870E TOMAHAWK WIFI (MS-7E59)
-*   **CPU**: AMD Ryzen 7 9700X (8 Cores / 16 Threads, SMT Enabled, Socket AM5)
+*   **CPU**: AMD Ryzen 7 9700X (8 Cores / 16 Threads, SMT Enabled, Socket AM5, Granite Ridge)
 *   **RAM**: 32 GB DDR5
 *   **HBA Controller**: Broadcom / LSI SAS2308 PCI-Express Fusion-MPT SAS-2 (IT Mode)
 *   **Chassis/Enclosure**: Jonsbo N5 NAS/Storage Chassis (Integrated Hot-Swap Backplane)
-*   **OS**: Proxmox VE 9.2.3 (Debian GNU/Linux 13 Trixie, kernel `7.0.12-1-pve`)
+*   **OS**: Co-installation native Proxmox VE 9.2.3 & Proxmox Backup Server (Debian GNU/Linux 13 Trixie, kernel `7.0.12-1-pve` / `7.0.14-20-pve`)
 *   **Local IP**: ULA: `fddf::2`
 *   **Onboard NICs**: Onboard Realtek RTL8126 5GbE Controller (`nic0`, PVE Bridge `vmbr0`), 10G 10Gtek PCIe Card (`nic2`, IP: `fddd::2/64` for direct 10G storage link), Qualcomm WCN785x Wi-Fi 7 Controller (`wlp7s0`, disabled)
 *   **Storage Pool**:
@@ -86,15 +87,28 @@
     *   Backup SSD: 1x 1 TB NVMe SSD (Native Proxmox Backup Server Datastore `Backups` formatted in XFS, on `nvme1n1` mounted at `/mnt/datastore/Backups`)
     *   SAN Backend: 2x 10 TB Seagate Exos SAS HDDs (`sda`, `sdd`) exported as raw block devices via iSCSI (LIO target) for the Media Tier.
     *   ZFS Storage: 2x 10 TB Seagate Exos SAS HDDs (`sdb`, `sdc`) natively pooled locally on skynet as a ZFS Mirror (`zfs-pool`).
-*   **Services**: `pveproxy`, `pve-cluster`, `proxmox-backup-server` (Datastore `Backups` bound to `[fddd::2]:8007`), `targetcli` (iSCSI LIO Target `iqn.2024-01.local.homelab:skynet-target` configured over 10G portal `[fddd::2]:3260`). skynet natively runs ZFS for the Cloud Storage Tier.
+*   **Services**: `pveproxy`, `pve-cluster`, native `proxmox-backup-server` daemon (Datastore `Backups` bound to `[fddd::2]:8007`), `targetcli` (iSCSI LIO Target `iqn.2024-01.local.homelab:skynet-target` configured over 10G portal `[fddd::2]:3260`).
+*   **Active Virtualization**:
+    *   **VM 121 (Desktop)**: Primary Workstation, Gaming & AI Node (CachyOS Linux, direct passthrough AMD Radeon RX 9070 XT).
 
-#### 💻 Nuc - Redundant Services Node / Control Node
-*   **Model**: Intel NUC7i3DNHE (Motherboard: NUC7i3DNB)
-*   **CPU**: Intel(R) Core(TM) i3-7100U CPU @ 2.40GHz (2 Cores / 4 Threads)
-*   **GPU**: Intel Corporation HD Graphics 620 (rev 02)
-*   **RAM**: 8 GB DDR4
-*   **OS**: Debian GNU/Linux 13 (trixie, version 13.6, Kernel `6.12.95+deb13-amd64`)
-*   **Local IP**: ULA: `fddf::3` 
+#### 🖥️ Desktop (VM 121 sur skynet) - Primary Workstation, Gaming & AI Node
+*   **Guest OS**: CachyOS Linux (Rolling Release, Kernel `linux-cachyos`, Limine Bootloader + `limine-snapper-sync`)
+*   **Hardware vSpecs**: Q35, UEFI OVMF, 12 vCPUs type `host` (Zen 5 AVX-512 direct expose), 16 Go RAM statique, VirtIO SCSI Single IOThreads, `vga: none`
+*   **Dedicated Hardware Passthrough**:
+    *   **GPU**: AMD Radeon RX 9070 XT (Navi 48) — PCI IDs `1002:7550` & `1002:ab40` (early-binding `vfio-pci`)
+    *   **USB Devices**: Logitech USB Receiver (`046d:c543`), CX 2.4G Wireless Receiver (`3554:fa0a`)
+*   **Storage Architecture (Hybrid Tiering)**:
+    *   OS Root `/`: 100 Go sur NVMe hôte Samsung 980 Pro (`/dev/sda2`, BTRFS subvol `@`)
+    *   User Data `/home`: 1000 Go ZVOL sparse sur pool ZFS SAS `Local-pool` (`/dev/sdb1`, BTRFS subvol `@home`)
+    *   I/O Optimization: Bind Mount noyau `/var/cache/tuco` -> `/home/tuco/.cache` sur NVMe pour absorber les écritures aléatoires
+*   **Display & Drivers**: Mesa 26.2.4 (RADV GFX1201 ACO), Wayland KDE Plasma 6, VRR/FreeSync `Automatic`, DP-2 120Hz/240Hz, VA-API VCN 5, `lactd.service` actif
+*   **Roles**: Station de travail quotidienne, Gaming haute performance, Administration centrale Homelab, futur nœud IA locale (ROCm).
+
+#### 🍓 Pi (Raspberry Pi 4) - Out-of-Band Emergency VPN Node
+*   **Model**: Raspberry Pi 4 Model B
+*   **OS**: Raspberry Pi OS Lite (Debian Trixie)
+*   **Local IP**: ULA: `fddf::3`
+*   **Role**: Nœud de secours Out-of-Band (OOB) hébergeant **Tailscale** pour assurer un accès distant d'urgence au Homelab en cas de défaillance du conteneur WireGuard principal (CT 111) ou de la connectivité Freebox. 
 
 
 ---
