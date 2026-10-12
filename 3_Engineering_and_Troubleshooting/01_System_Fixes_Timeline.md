@@ -927,3 +927,21 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
      ```
   4. Purged underlying masked files on the SAS block device before mounting to prevent invisible disk space loss.
 * **Verification:** Confirmed via `findmnt /home/tuco/.cache` that the directory resolves to `/dev/sda2[/@cache/tuco]`. Validated non-root write and delete capabilities, confirmed instant zero-latency caching under Wayland, while ensuring all user documents and configurations remain securely stored on the redundant ZFS SAS storage tier.
+
+## Date: 12 October 2026
+
+### Issue 64: Split-DNS Breakage under Linux systemd-resolved via Multi-Stack DNS Priority Inversion
+* **Symptoms:** Accessing internal services like `https://cloud.paoloferra.com` from the CachyOS Workstation (VM 121 Desktop) timed out after 5000 ms (`curl: (28) Connection timed out`), whereas smartphones on the same Wi-Fi LAN loaded the service instantly. DNS queries on Desktop resolved `cloud.paoloferra.com` to the public delegated secondary GUA `2a01:e0a:d6f:29e2::112` instead of the local split-DNS GUA `2a01:e0a:d6f:29e0:be24:11ff:fe6b:d593`. Direct ping to `2a01:e0a:d6f:29e2::112` suffered 100% packet loss.
+* **Diagnosis:**
+  1. **Lack of Inter-Prefix Hairpinning on ISP Router:** The Freebox Pop delegates secondary `/64` subnets (such as `29e2::/64` assigned to Traefik-112 for inbound WAN traffic). Packets originating from the internal LAN (`29e0::/64`) targeting `29e2::/64` are routed to the Freebox default gateway (`fe80::3a07:...`), which silently drops inter-prefix hairpin traffic. Split-horizon DNS (rewriting `*.paoloferra.com` to Traefik's on-link GUA `2a01:e0a:d6f:29e0:be24:11ff:fe6b:d593`) on AdGuard Home (LXC 115) is therefore mandatory for LAN clients.
+  2. **Multi-Stack Serialization & systemd-resolved Stickiness:** On Desktop, NetworkManager had both IPv4 fallback DNS servers (`1.1.1.1`, `1.0.0.1`) and the IPv6 AdGuard Link-Local address (`fe80::be24:11ff:feea:f530`). Because both `ipv4.dns-priority` and `ipv6.dns-priority` were set to default `0`, NetworkManager serialized IPv4 DNS servers first in the list pushed to `systemd-resolved`.
+  3. **Algorithmic Discrepancy (Mobile/Windows vs Linux):** While mobile OSes (Android/iOS) strictly enforce IPv6 precedence (RFC 6724 / Happy Eyeballs) and Windows queries all resolvers concurrently (taking the fastest 0.5 ms LAN reply), `systemd-resolved` operates sequentially with persistent stickiness to the first answering server. It latched onto Cloudflare `1.1.1.1`, completely bypassing local AdGuard rewrites.
+* **Fix Applied:**
+  1. Configured strict IPv6 DNS precedence in NetworkManager by setting `ipv6.dns-priority` to `-10` on the active interface profile (`Connexion filaire 1` on `ens18`):
+     ```bash
+     sudo nmcli connection modify "Connexion filaire 1" ipv6.dns-priority -10
+     sudo nmcli connection up "Connexion filaire 1"
+     ```
+  2. Isolated AdGuard Home as the sole IPv6 resolver (`fe80::be24:11ff:feea:f530%2`), retaining IPv4 Cloudflare (`1.1.1.1`) purely as a passive fallback.
+  3. Flushed `systemd-resolved` caches via `resolvectl flush-caches`.
+* **Verification:** Confirmed via `resolvectl status ens18` that `Current DNS Server` is pinned to AdGuard LLA (`fe80::be24:11ff:feea:f530%2`). Verified via `resolvectl query cloud.paoloferra.com` that the host resolves in 1.5 ms to on-link GUA `2a01:e0a:d6f:29e0:be24:11ff:fe6b:d593`. Validated instant end-to-end TLSv1.3 handshake and `HTTP/2 302 Found` response from Nextcloud (LXC 131) via Traefik (LXC 112).

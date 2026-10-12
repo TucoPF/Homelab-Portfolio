@@ -27,8 +27,8 @@
     *   *Sensitive Data*: Forbidden to exfiltrate without permission.
 
 ## 📂 4. DIRECTORY REFERENCE
-**All core documentation and inventory details are located in `/root/Homelab-Portfolio`.** Refer to them as the primary source of truth.
-**You might find additional documentation on specific projects in /root/Repos&Docs**
+**All core documentation and inventory details are located in `/home/tuco/Homelab-Portfolio`.** Refer to them as the primary source of truth.
+**You might find additional documentation on specific projects in `/home/tuco/Homelab-Portfolio/Repos-Docs`**
 
 
 
@@ -131,4 +131,4 @@
 
 ### 4. Verified System Fixes & Learnings
 
-All verified system fixes and learnings are documented chronologically in [System_Fixes_Timeline.md](file:///root/Homelab-Portfolio/3_Engineering_and_Troubleshooting/01_System_Fixes_Timeline.md). Refer to it for the historical record of troubleshooting and workarounds.
+All verified system fixes and learnings are documented chronologically in [System_Fixes_Timeline.md](file:///home/tuco/Homelab-Portfolio/3_Engineering_and_Troubleshooting/01_System_Fixes_Timeline.md). Refer to it for the historical record of troubleshooting and workarounds.
