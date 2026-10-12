@@ -945,3 +945,22 @@ The fix is persistent across reboots. The sensor no longer enters autosuspend, w
   2. Isolated AdGuard Home as the sole IPv6 resolver (`fe80::be24:11ff:feea:f530%2`), retaining IPv4 Cloudflare (`1.1.1.1`) purely as a passive fallback.
   3. Flushed `systemd-resolved` caches via `resolvectl flush-caches`.
 * **Verification:** Confirmed via `resolvectl status ens18` that `Current DNS Server` is pinned to AdGuard LLA (`fe80::be24:11ff:feea:f530%2`). Verified via `resolvectl query cloud.paoloferra.com` that the host resolves in 1.5 ms to on-link GUA `2a01:e0a:d6f:29e0:be24:11ff:fe6b:d593`. Validated instant end-to-end TLSv1.3 handshake and `HTTP/2 302 Found` response from Nextcloud (LXC 131) via Traefik (LXC 112).
+
+### Issue 65: CrowdSec False Positive Ban on Desktop GUA via API Bursts & IPv6 NDP Neighbor Table Lockup
+* **Symptoms:** Complete network communication failure in IPv6 GUA between `Desktop` (VM 121) and `matrix` (Proxmox host `2a01:e0a:d6f:29e0:5a47:caff:fe7a:84cc`) with 100% packet loss, whereas ULA (`fddf::1` / `fddf::3`) continued to communicate nominally (<0.5 ms). Running `ping` from `matrix` to Desktop GUA returned `Destination unreachable: Address unreachable`.
+* **Diagnosis:**
+  1. **NDP Neighbor Discovery Lockup:** Inspection of the IPv6 neighbor cache on `matrix` (`ip -6 neigh show`) revealed `2a01:e0a:d6f:29e0:71a5:cf9a:e391:29d7 dev vmbr0 FAILED`. The Linux kernel on `matrix` failed to dynamically resolve Desktop's MAC address over SLAAC GUA, immediately dropping outbound packets before reaching `vmbr0`.
+  2. **Root Cause Analysis (CrowdSec Ban via PVE Firewall Bouncer):** CrowdSec logs on central LAPI (CT 114) revealed an active 4-hour ban on Desktop's GUA IP:
+     ```text
+     time="2026-10-12T12:25:42+02:00" level=info msg="(traefik-agent/crowdsec) crowdsecurity/http-crawl-non_statics by ip 2a01:e0a:d6f:29e0:71a5:cf9a:e391:29d7 : 4h ban"
+     ```
+     Because the CrowdSec PVE Firewall bouncer drops incoming L3/L4 traffic from banned IPs, ICMPv6 Neighbor Solicitations / Advertisements were silently discarded, driving the kernel NDP entry into `FAILED`.
+  3. **Trigger Mechanism (Nextcloud Office & Seerr API Bursts):** Analysis of `/var/log/traefik/access.log` processed by `traefik-agent` in CT 112 showed that browsing Nextcloud (`cloud.paoloferra.com`, specifically Nextcloud Office `/apps/office/`, notifications, heartbeat, and templates) or Overseerr (`seerr.paoloferra.com`) generates 40+ concurrent asynchronous GET/HEAD requests to dynamic API endpoints within a few seconds. The default `crowdsecurity/http-crawl-non_statics` scenario has a threshold of `capacity: 40` (leakspeed: 0.5s), misinterpreting rich single-page application (SPA) loading as an aggressive scraping attack.
+* **Fix Applied:**
+  1. **Purged Active Sanction:** Deleted the active ban decision in CrowdSec via CT 114 (`cscli decisions delete --ip ...`), which immediately instructed the PVE Firewall bouncer to flush the drop rule and restored dynamic NDP neighbor resolution to `REACHABLE`.
+  2. **Applied Clean Hub Override (.local file):** In CT 112 (Traefik, where the HTTP scenario engine operates), deployed a standard CrowdSec `.local` override file at `/etc/crowdsec/scenarios/http-crawl-non_statics.yaml.local`:
+     ```yaml
+     capacity: 100
+     ```
+  3. **Reloaded Service:** Executed `systemctl reload crowdsec` in CT 112 to ingest the 100-request capacity without tainting the upstream hub package (`cscli scenarios list` retains status `✔️ enabled`).
+* **Verification:** Confirmed via `systemctl status crowdsec` in CT 112 that the configuration reloaded cleanly without downtime. Verified dynamic NDP resolution on `matrix` (`REACHABLE`) and bidirectional GUA ICMPv6 transmission between Desktop and Matrix with 0% packet loss and ~0.5 ms latency.
